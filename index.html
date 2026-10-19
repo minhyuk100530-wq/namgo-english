@@ -1,129 +1,88 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>고등 영어 내신 서술형 마스터</title>
-    <style>
-        body { font-family: 'Malgun Gothic', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #f9f9f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        textarea, input[type="text"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; margin-top: 8px; }
-        textarea { height: 120px; }
-        button { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #45a049; }
-        .question-box { background: #eef2f7; padding: 15px; border-radius: 6px; margin-top: 15px; }
-        .loading { color: #e67e22; font-weight: bold; }
-    </style>
-    <!-- 구글 Gemini API를 브라우저에서 바로 쓰기 위한 라이브러리 로드 -->
-    <script type="importmap">
-      {
-        imports: {
-          "@google/genai": "https://esm.run/@google/genai"
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고등 영어 내신 서술형 트레이너</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- ES 모듈 맵 설정 -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
       }
-    </script>
+    }
+  </script>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>📚 고등 영어 내신 서술형 트레이너</h1>
+      <p class="subtitle">모바일 최적화 · 어휘/어법/대화문 집중 대비</p>
+    </header>
 
-    <h1>📚 고등 영어 내신 서술형 트레이너</h1>
-
-    <!-- 0단계: API 키 입력 -->
-    <div class="card">
-        <h3>0단계: Gemini API 키 설정</h3>
-        <p>Google AI Studio에서 발급받은 API 키를 입력해주세요.</p>
+    <!-- 0단계: API 키 설정 -->
+    <section class="card" id="step-api">
+      <h2>0단계: Gemini API 키 설정</h2>
+      <p class="desc">Google AI Studio에서 발급받은 API 키를 입력해주세요. (한 번 입력하면 자동 저장됩니다)</p>
+      <div class="input-group">
         <input type="password" id="apiKeyInput" placeholder="AIzaSy... 로 시작하는 API 키 입력">
-    </div>
+        <button id="saveApiKeyBtn" class="btn secondary">저장</button>
+      </div>
+      <div id="apiKeyStatus" class="status-msg"></div>
+    </section>
 
     <!-- 1단계: 지문 입력 -->
-    <div class="card">
-        <h3>1단계: 오늘의 시험 범위 지문 입력</h3>
-        <p>오늘 공부할 모의고사나 교과서 지문을 붙여넣으세요.</p>
-        <textarea id="passageInput" placeholder="예: Environmental changes can significantly impact wildlife habitats..."></textarea>
-        <br>
-        <button onclick="generateQuestion()">AI로 서술형 문제 생성하기</button>
-    </div>
+    <section class="card" id="step-input">
+      <h2>1단계: 오늘의 시험 범위 지문 입력</h2>
+      <p class="desc">오늘 공부할 모의고사나 교과서 지문을 붙여넣으세요.</p>
+      <textarea id="passageInput" placeholder="예: Environmental shampoo can significantly impact wildlife habitats..."></textarea>
+      
+      <div class="option-group">
+        <label>문제 유형 선택:</label>
+        <select id="quizTypeSelect">
+          <option value="mixed">전체 혼합 (어휘 + 어법 + 대화문)</option>
+          <option value="vocab">어휘 집중 공략</option>
+          <option value="grammar">어법 집중 공략</option>
+          <option value="conversation">대화문/흐름 집중 공략</option>
+        </select>
+      </div>
 
-    <!-- 2단계: 문제 풀이 영역 (처음엔 숨김) -->
-    <div class="card" id="studyCard" style="display: none;">
-        <h3>2단계: 서술형 문제 풀기</h3>
-        <div class="question-box">
-            <p id="loadingText" class="loading" style="display: none;">🤖 AI가 지문을 분석해서 서술형 문제를 만드는 중입니다...</p>
-            <div id="quizContent" style="display: none;">
-                <p id="questionText"><strong>[문제]</strong> 출제된 문제가 여기에 표시됩니다.</p>
-                <input type="text" id="userAnswer" placeholder="정답을 영어로 입력하세요">
-                <button onclick="checkAnswer()">정답 제출 및 채점</button>
-            </div>
-        </div>
-        <p id="resultFeedback" style="font-weight: bold; margin-top: 15px;"></p>
-    </div>
+      <button id="generateBtn" class="btn primary">🚀 문제 생성하기</button>
+    </section>
 
-    <script type="module">
-        import { GoogleGenAI } from "@google/genai";
+    <!-- 로딩 화면 -->
+    <section class="card loading-card" id="step-loading" style="display: none;">
+      <div class="spinner"></div>
+      <p id="loadingText">AI가 내신 출제 경향을 분석하여 문제를 만드는 중입니다...</p>
+    </section>
 
-        let aiClient = null;
+    <!-- 2단계: 퀴즈 풀이 영역 -->
+    <section class="card" id="step-quiz" style="display: none;">
+      <div class="quiz-header">
+        <span id="quizProgress">문제 1 / 10</span>
+        <span id="scoreBadge">점수: 0점</span>
+      </div>
+      <div id="questionContainer" class="question-box">
+        <!-- 문제가 동적으로 들어갑니다 -->
+      </div>
+      <div class="quiz-footer">
+        <button id="prevBtn" class="btn secondary" style="display: none;">이전</button>
+        <button id="nextBtn" class="btn primary">다음 문제</button>
+      </div>
+    </section>
 
-        // 전역 함수로 등록하여 HTML 버튼에서 호출할 수 있게 함
-        window.generateQuestion = async function() {
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
-            const passage = document.getElementById('passageInput').value.trim();
+    <!-- 3단계: 결과 및 피드백 영역 -->
+    <section class="card" id="step-result" style="display: none;">
+      <h2>🎉 학습 완료!</h2>
+      <div id="scoreSummary" class="score-summary"></div>
+      <div id="feedbackContainer" class="feedback-box"></div>
+      <button id="restartBtn" class="btn primary">처음으로 돌아가기</button>
+    </section>
+  </div>
 
-            if (!apiKey) {
-                alert("0단계에서 Gemini API 키를 먼저 입력해주세요!");
-                return;
-            }
-            if (!passage) {
-                alert("1단계에 지문을 먼저 입력해주세요!");
-                return;
-            }
-
-            // AI 클라이언트 초기화
-            aiClient = new GoogleGenAI({ apiKey: apiKey });
-
-            // 화면 UI 상태 변경 (로딩 시작)
-            document.getElementById('studyCard').style.display = "block";
-            document.getElementById('loadingText').style.display = "block";
-            document.getElementById('quizContent').style.display = "none";
-            document.getElementById('resultFeedback').innerText = "";
-
-            try {
-                // Gemini 모델에 보낼 프롬프트 작성
-                const prompt = `다음 고등학교 영어 지문을 분석해서 내신 서술형 문제(빈칸 채우기 또는 어순 배열) 딱 1문제만 만들어줘. 
-출력 형식은 다음과 같이 해줘:
-[문제 내용]
-(정답 단어 또는 문장)`;
-
-                // Gemini 호출 (최신 gemini-2.5-flash 모델 사용)
-                const response = await aiClient.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: `${prompt}\n\n지문:\n${passage}`,
-                });
-
-                // AI가 생성한 응답을 화면에 띄우기
-                document.getElementById('questionText').innerHTML = `<strong>[AI 출제 문제]</strong><br>` + response.text.replace(/\n/g, '<br>');
-                
-                // 로딩 숨기고 문제 영역 보이기
-                document.getElementById('loadingText').style.display = "none";
-                document.getElementById('quizContent').style.display = "block";
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loadingText').style.display = "none";
-                alert("오류가 발생했습니다. API 키가 올바른지 확인해주세요!");
-            }
-        };
-
-        window.checkAnswer = function() {
-            const userAns = document.getElementById('userAnswer').value.trim();
-            const feedback = document.getElementById('resultFeedback');
-            
-            if (!userAns) {
-                alert("답안을 입력해주세요!");
-                return;
-            }
-
-            feedback.style.color = "blue";
-            feedback.innerText = `[제출 완료] 작성하신 답("${userAns}")이 입력되었습니다. (다음 단계에서 AI 채점 기능을 붙여볼게요!)`;
-        };
-    </script>
-
+  <!-- 메인 스크립트 연결 (ES 모듈) -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
