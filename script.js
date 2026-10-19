@@ -1,4 +1,3 @@
-// script.js 전체 코드 (Gemini API 연동 및 폴백 엔진 포함)
 import { GoogleGenAI } from "@google/genai";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -43,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   let quizData = [];
+  let currentPassage = "";
   let currentIndex = 0;
   let userAnswers = [];
   let score = 0;
@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("공부할 지문을 입력해주세요.");
       return;
     }
+    currentPassage = passage;
 
     stepInput.style.display = "none";
     stepApi.style.display = "none";
@@ -61,8 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       quizData = await fetchQuizFromGemini(passage, quizTypeSelect.value, currentApiKey);
     } catch (err) {
-      console.warn("AI 호출 실패 또는 API 키 오류, 오프라인 폴백 문제 풀을 사용합니다.", err);
-      quizData = getFallbackQuiz(quizTypeSelect.value);
+      console.warn("AI 호출 실패 또는 API 키 오류, 확장된 폴백 문제 풀을 사용합니다.", err);
+      quizData = getExtendedFallbackQuiz();
     }
 
     stepLoading.style.display = "none";
@@ -101,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return JSON.parse(text);
   }
 
-  function getFallbackQuiz(type) {
+  function getExtendedFallbackQuiz() {
     return [
       {
         question: "다음 빈칸에 들어갈 가장 알맞은 어휘는?",
@@ -114,6 +115,24 @@ document.addEventListener("DOMContentLoaded", () => {
         options: ["① Environmental shampoo can", "② significantly impact", "③ wildlife habitats, which", "④ causing serious damage"],
         answer: 3,
         explanation: "which절 안에서 동사가 필요하므로 causing은 caused로 고쳐야 합니다."
+      },
+      {
+        question: "윗글의 내용과 가장 일치하는 것은?",
+        options: ["① 샴푸 사용은 환경에 영향이 없다.", "② 야생 생태계 보호는 불필요하다.", "③ 환경 친화적 제품 사용이 중요하다.", "④ 오염 물질 배출은 자연적으로 치유된다."],
+        answer: 2,
+        explanation: "지문에서 강조하는 핵심 주제는 친환경 제품을 통한 생태계 보호입니다."
+      },
+      {
+        question: "다음 중 글의 전체 흐름과 관계 없는 문장은?",
+        options: ["① 첫 번째 문장", "② 두 번째 문장", "③ 흐름 무관 문장", "④ 마지막 문장"],
+        answer: 2,
+        explanation: "전체 주제인 생태계 보호와 무관한 내용이 섞여 있는 문장입니다."
+      },
+      {
+        question: "필자가 이 글을 통해 가장 역설하고자 하는 바는?",
+        options: ["① 경제적 이익 추구", "② 환경 오염의 심각성 인식", "③ 신제품 개발 촉구", "④ 법적 규제 완화"],
+        answer: 1,
+        explanation: "환경 파괴의 심각성을 인지하고 대책을 세워야 함을 주장하고 있습니다."
       }
     ];
   }
@@ -123,11 +142,17 @@ document.addEventListener("DOMContentLoaded", () => {
     quizProgress.textContent = `문제 ${currentIndex + 1} / ${quizData.length}`;
     scoreBadge.textContent = `점수: ${score}점`;
 
-    let html = `<p style="margin-bottom: 15px; font-weight: bold;">Q. ${q.question}</p>`;
+    let html = `
+      <div style="background: #f1f8fc; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; color: #2c3e50; border-left: 4px solid #3498db;">
+        <strong>📖 참고 지문:</strong><br>${currentPassage}
+      </div>
+      <p style="margin-bottom: 15px; font-weight: bold;">Q. ${q.question}</p>
+    `;
+
     q.options.forEach((opt, idx) => {
       const isChecked = userAnswers[currentIndex] === idx ? "checked" : "";
       html += `
-        <label style="display: block; padding: 10px; margin-bottom: 8px; background: #f8f9fa; border-radius: 6px; cursor: pointer;">
+        <label style="display: block; padding: 10px; margin-bottom: 8px; background: #f8f9fa; border-radius: 6px; cursor: pointer; border: 1px solid #e9ecef;">
           <input type="radio" name="quizOption" value="${idx}" ${isChecked} style="margin-right: 8px;">
           ${opt}
         </label>`;
@@ -143,8 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     userAnswers[currentIndex] = parseInt(selected.value);
+    const pointsPerQuestion = Math.round(100 / quizData.length);
     if (userAnswers[currentIndex] === quizData[currentIndex].answer) {
-      score += 20;
+      score += pointsPerQuestion;
     }
 
     currentIndex++;
