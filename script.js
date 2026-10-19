@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const passageInput = document.getElementById("passageInput");
   const passagePhotoInput = document.getElementById("passagePhotoInput");
   const ocrStatus = document.getElementById("ocrStatus");
+  const cropModal = document.getElementById("cropModal");
+  const cropImage = document.getElementById("cropImage");
+  const cropExtractBtn = document.getElementById("cropExtractBtn");
+  const cropCancelBtn = document.getElementById("cropCancelBtn");
+  
   const quizTypeSelect = document.getElementById("quizTypeSelect");
   const generateBtn = document.getElementById("generateBtn");
 
@@ -23,6 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const scoreSummary = document.getElementById("scoreSummary");
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
+
+  let cropper = null;
 
   let currentApiKey = localStorage.getItem("gemini_api_key") || "";
   if (currentApiKey) {
@@ -43,25 +50,78 @@ document.addEventListener("DOMContentLoaded", () => {
     apiKeyStatus.style.color = "green";
   });
 
-  // 📷 지문 사진 OCR 텍스트 인식 로직
-  passagePhotoInput.addEventListener("change", async (e) => {
+  // 사진 선택 시 Cropper 초기화
+  passagePhotoInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    ocrStatus.textContent = "⏳ 사진에서 텍스트를 인식하는 중입니다... (10~20초 소요)";
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      cropImage.src = event.target.result;
+      cropModal.style.display = "block";
+
+      if (cropper) {
+        cropper.destroy();
+      }
+
+      cropper = new Cropper(cropImage, {
+        viewMode: 1,
+        autoCropArea: 0.8,
+        responsive: true
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  cropCancelBtn.addEventListener("click", () => {
+    cropModal.style.display = "none";
+    if (cropper) cropper.destroy();
+  });
+
+  // 자른 영역 Gemini AI Vision으로 정밀 OCR 처리
+  cropExtractBtn.addEventListener("click", async () => {
+    if (!cropper) return;
+
+    const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+    const base64Image = canvas.toDataURL("image/jpeg").split(",")[1];
+
+    cropModal.style.display = "none";
+    ocrStatus.textContent = "🤖 Gemini AI가 지문만 정확하게 분석 및 인식을 진행하고 있습니다...";
     ocrStatus.style.color = "#3498db";
 
     try {
-      const result = await Tesseract.recognize(file, 'eng');
-      passageInput.value = result.data.text.trim();
-      ocrStatus.textContent = "✅ 사진 텍스트 추출 완료! 지문을 확인해 주세요.";
+      const extractedText = await extractTextWithGeminiVision(base64Image, currentApiKey);
+      passageInput.value = extractedText;
+      ocrStatus.textContent = "✅ 지문 정밀 인식 완료! (오류 및 옆 문제 자동 제거됨)";
       ocrStatus.style.color = "green";
     } catch (err) {
       console.error(err);
-      ocrStatus.textContent = "❌ 텍스트 인식 실패. 지문을 직접 입력해 주세요.";
+      ocrStatus.textContent = "❌ AI 인식 실패 (API 키 확인 필요). 지문을 직접 복사/입력해 주세요.";
       ocrStatus.style.color = "red";
     }
   });
+
+  async function extractTextWithGeminiVision(base64Image, apiKey) {
+    if (!apiKey) throw new Error("No API key");
+    const ai = new GoogleGenAI({ apiKey: apiKey });
+
+    const prompt = "이 사진에서 영어 시험지 지문 텍스트만 완벽하게 추출해줘. 문제 번호(예: 37번, 39번 등)나 주변에 걸쳐진 다른 문제, 한글 설명은 모두 제외하고 오직 영어 본문 지문 내용만 자연스럽게 연결된 완성된 텍스트로 복원해서 출력해줘.";
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Image
+          }
+        },
+        prompt
+      ]
+    });
+
+    return response.text.trim();
+  }
 
   let quizData = [];
   let currentPassage = "";
@@ -72,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   generateBtn.addEventListener("click", async () => {
     const passage = passageInput.value.trim();
     if (!passage) {
-      alert("지문을 입력하거나 사진 촬영으로 추가해 주세요.");
+      alert("지문을 입력하거나 사진 자르기로 추가해 주세요.");
       return;
     }
     currentPassage = passage;
@@ -212,7 +272,6 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>`;
       });
     } else {
-      // 서술형: 바로 직접 타이핑해서 서술형 답변을 입력하는 방식
       const savedText = typeof userAnswers[currentIndex] === 'string' ? userAnswers[currentIndex] : '';
       html += `
         <div class="subjective-box">

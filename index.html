@@ -6,8 +6,9 @@
   <title>고등 영어 내신 서술형 & 내용이해 트레이너</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- OCR(사진 텍스트 추출) 라이브러리 -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <!-- Cropper.js (이미지 영역 크롭/자르기 라이브러리) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
   <!-- ES 모듈 맵 설정 -->
   <script type="importmap">
@@ -22,7 +23,7 @@
   <div class="container">
     <header>
       <h1>📚 고등 영어 내신 서술형 & 내용이해 트레이너</h1>
-      <p class="subtitle">모바일 최적화 · 지문 사진 촬영 OCR · 내용이해 & 영작 집중 대비</p>
+      <p class="subtitle">모바일 최적화 · 지문 영역 자르기 AI OCR · 서술형 집중 대비</p>
     </header>
 
     <!-- 0단계: API 키 설정 -->
@@ -39,16 +40,28 @@
     <!-- 1단계: 지문 입력 및 설정 -->
     <section class="card" id="step-input">
       <h2>1단계: 시험 범위 지문 입력</h2>
-      <p class="desc">지문을 직접 입력하거나, 📸 지문 사진을 촬영하여 텍스트를 추출하세요.</p>
+      <p class="desc">지문을 직접 입력하거나, 📸 지문 사진을 찍은 뒤 원하는 지문만 영역 선택하세요.</p>
       
       <!-- OCR 사진 업로드 영역 -->
       <div class="ocr-box">
-        <label for="passagePhotoInput" class="btn ocr-btn">📷 지문 사진 촬영 / 첨부하여 텍스트 추출</label>
+        <label for="passagePhotoInput" class="btn ocr-btn">📷 지문 사진 촬영 / 첨부하기</label>
         <input type="file" id="passagePhotoInput" accept="image/*" capture="environment" style="display: none;">
         <div id="ocrStatus" class="status-msg"></div>
       </div>
 
-      <textarea id="passageInput" placeholder="여기에 지문이 입력됩니다... (사진 촬영 시 자동으로 채워집니다)"></textarea>
+      <!-- 이미지 영역 자르기(Crop) 모달 영역 -->
+      <div id="cropModal" class="crop-modal" style="display: none;">
+        <p class="crop-instruction">✂️ 인식할 **지문 부분만** 드래그해서 네모 상자로 맞춘 뒤 [선택 영역 인식]을 누르세요.</p>
+        <div class="img-container">
+          <img id="cropImage" src="" alt="지문 이미지">
+        </div>
+        <div class="crop-actions">
+          <button id="cropExtractBtn" class="btn primary">✨ 선택 영역 지문 인식하기</button>
+          <button id="cropCancelBtn" class="btn secondary">취소</button>
+        </div>
+      </div>
+
+      <textarea id="passageInput" placeholder="여기에 지문이 입력됩니다... (사진 자르기 시 AI가 지문만 정밀하게 정제하여 채워줍니다)"></textarea>
       
       <div class="option-group">
         <label>문제 출제 유형:</label>
