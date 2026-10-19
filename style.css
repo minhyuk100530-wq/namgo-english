@@ -23,12 +23,12 @@ header {
 }
 
 header h1 {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: #2c3e50;
 }
 
 .subtitle {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #7f8c8d;
 }
 
@@ -67,8 +67,28 @@ input[type="password"], textarea, select, input[type="text"] {
 }
 
 textarea {
-  height: 110px;
+  height: 130px;
   resize: vertical;
+}
+
+.ocr-box {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.ocr-btn {
+  display: inline-block;
+  background-color: #2ecc71;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ocr-btn:hover {
+  background-color: #27ae60;
 }
 
 .option-group {
@@ -133,22 +153,21 @@ textarea {
   font-size: 0.88rem;
   color: #2c3e50;
   border-left: 4px solid #3498db;
-  max-height: 150px;
+  max-height: 160px;
   overflow-y: auto;
+  white-space: pre-line;
 }
 
-.photo-upload-box {
+.subjective-box {
   background: #fdfefe;
-  border: 2px dashed #bdc3c7;
-  padding: 15px;
+  border: 1px solid #3498db;
+  padding: 12px;
   border-radius: 8px;
-  text-align: center;
   margin-top: 10px;
 }
 
-.preview-img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  margin-top: 10px;
+.status-msg {
+  font-size: 0.82rem;
+  margin-top: 5px;
+  font-weight: 600;
 }

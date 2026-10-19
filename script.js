@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveApiKeyBtn = document.getElementById("saveApiKeyBtn");
   const apiKeyStatus = document.getElementById("apiKeyStatus");
   const passageInput = document.getElementById("passageInput");
+  const passagePhotoInput = document.getElementById("passagePhotoInput");
+  const ocrStatus = document.getElementById("ocrStatus");
   const quizTypeSelect = document.getElementById("quizTypeSelect");
   const generateBtn = document.getElementById("generateBtn");
 
@@ -41,6 +43,26 @@ document.addEventListener("DOMContentLoaded", () => {
     apiKeyStatus.style.color = "green";
   });
 
+  // 📷 지문 사진 OCR 텍스트 인식 로직
+  passagePhotoInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    ocrStatus.textContent = "⏳ 사진에서 텍스트를 인식하는 중입니다... (10~20초 소요)";
+    ocrStatus.style.color = "#3498db";
+
+    try {
+      const result = await Tesseract.recognize(file, 'eng');
+      passageInput.value = result.data.text.trim();
+      ocrStatus.textContent = "✅ 사진 텍스트 추출 완료! 지문을 확인해 주세요.";
+      ocrStatus.style.color = "green";
+    } catch (err) {
+      console.error(err);
+      ocrStatus.textContent = "❌ 텍스트 인식 실패. 지문을 직접 입력해 주세요.";
+      ocrStatus.style.color = "red";
+    }
+  });
+
   let quizData = [];
   let currentPassage = "";
   let currentIndex = 0;
@@ -50,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   generateBtn.addEventListener("click", async () => {
     const passage = passageInput.value.trim();
     if (!passage) {
-      alert("지문을 입력해 주세요.");
+      alert("지문을 입력하거나 사진 촬영으로 추가해 주세요.");
       return;
     }
     currentPassage = passage;
@@ -78,30 +100,43 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!apiKey) throw new Error("No API key");
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
-    const prompt = `다음 고등학교 영어 지문을 바탕으로 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 만들어줘.
-    유형: ${type}
-    지문: ${passage}
+    const prompt = `다음 고등학교 영어 지문을 바탕으로 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
+    유형 선택: ${type}
+    지문 내용: ${passage}
     
-    [응답 규칙]
-    - "type": "objective"(4지선다) 또는 "subjective"(서술형 영작)
-    - 객관식의 경우 "options" 배열과 "answer"(0~3 인덱스) 포함
-    - 서술형의 경우 "options"는 빈 배열, "answerText"에 모범 답안 기술
-    
-    응답 JSON 형식:
+    [출제 가이드라인]
+    1. 구성: 
+       - 글의 주제, 내용 일치/불일치, 세부 질문(Q&A) 등 "내용 이해 문제" 포함
+       - 어법 및 어휘 문제 포함
+       - 빈칸추론 출제 시, 반드시 question 문장 안에 명확한 빈칸 표시 "(        )"을 뚫어서 출제할 것.
+       - 서술형 문제는 "조건부 영작" 또는 "핵심 내용 한국어/영어 서술" 형태로 출제할 것.
+    2. JSON 형식 규칙:
+       - "type": "objective"(4지선다) 또는 "subjective"(서술형)
+       - 객관식의 경우 "options" 배열(4개)과 "answer"(0~3 숫자 인덱스) 포함
+       - 서술형의 경우 "options"는 [], "answerText"에 모범 답안 작성
+
+    응답 JSON 구조 예시 (백틱 없이 pure JSON):
     [
       {
         "type": "objective",
-        "question": "다음 빈칸에 알맞은 말은?",
+        "question": "다음 글의 요지로 가장 적절한 것은?",
         "options": ["① option1", "② option2", "③ option3", "④ option4"],
         "answer": 0,
         "explanation": "해설 내용"
       },
       {
+        "type": "objective",
+        "question": "다음 지문의 빈칸 (        )에 들어갈 가장 적절한 단어는?",
+        "options": ["① significant", "② trivial", "③ accidental", "④ harmful"],
+        "answer": 0,
+        "explanation": "맥락상 significant가 들어갑니다."
+      },
+      {
         "type": "subjective",
-        "question": "[서술형] 주어진 조건을 바탕으로 한 문장으로 영작하시오.",
+        "question": "[서술형] 주어진 보기 단어(impact / environment)를 활용해 빈칸 조건에 맞는 문장으로 완결하시오.",
         "options": [],
-        "answerText": "Environmental shampoo impacts wildlife habitats.",
-        "explanation": "조건에 맞춘 모범 답안입니다."
+        "answerText": "It can significantly impact the environment.",
+        "explanation": "조건에 맞춘 모범 영작문입니다."
       }
     ]`;
 
@@ -119,17 +154,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return [
       {
         type: "objective",
-        question: "다음 빈칸에 들어갈 가장 알맞은 어휘는?",
+        question: "다음 글의 핵심 내용과 일치하지 않는 것은?",
+        options: ["① 지문은 환경 보호를 강조한다.", "② 샴푸 사용이 생태계에 영향을 줄 수 있다.", "③ 자연 파괴는 인간과 무관하다.", "④ 친환경 제품 사용이 권장된다."],
+        answer: 2,
+        explanation: "지문에서는 자연 파괴와 인간의 활동이 밀접함을 밝히고 있습니다."
+      },
+      {
+        type: "objective",
+        question: "다음 지문의 빈칸 (        )에 들어갈 가장 알맞은 어휘는?",
         options: ["① significant", "② trivial", "③ accidental", "④ harmful"],
         answer: 0,
         explanation: "지문의 맥락상 '중대한'이라는 의미의 significant가 알맞습니다."
       },
       {
         type: "subjective",
-        question: "[서술형] 밑줄 친 주장이 의미하는 바를 조건(한글 20자 이내)에 맞춰 쓰시오.",
+        question: "[서술형] 지문의 내용을 바탕으로 '친환경 샴푸가 생태계에 미치는 영향'에 대해 15자 이내로 서술하시오.",
         options: [],
-        answerText: "친환경 제품 사용을 통한 생태계 보호",
-        explanation: "지문의 주제문 요약과 일치해야 합니다."
+        answerText: "야생 생물 서식지 파괴를 줄이고 생태계를 보호함",
+        explanation: "지문의 주제를 올바르게 정리해야 합니다."
       },
       {
         type: "objective",
@@ -140,17 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         type: "subjective",
-        question: "[서술형 영작] (impact / wildlife / habitat) 단어를 활용하여 조건에 맞게 영작하시오.",
+        question: "[서술형 영작] (impact / wildlife / habitat) 단어를 모두 사용하여 조건에 맞게 영어로 작성하시오.",
         options: [],
         answerText: "It can significantly impact wildlife habitats.",
-        explanation: "조동사 뒤 동사원형 배치 및 부사 위치가 핵심입니다."
-      },
-      {
-        type: "objective",
-        question: "윗글의 주제로 가장 적절한 것은?",
-        options: ["① Importance of eco-shampoo", "② History of hair wash", "③ Animal testing", "④ Ocean pollution"],
-        answer: 0,
-        explanation: "전체 글의 핵심 소재인 친환경 샴푸의 중요성이 주제입니다."
+        explanation: "조동사 뒤 동사원형 및 부사 배치가 포인트입니다."
       }
     ];
   }
@@ -164,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="passage-box">
         <strong>📖 참고 지문:</strong><br>${currentPassage}
       </div>
-      <p style="margin-bottom: 12px; font-weight: bold;">Q${currentIndex + 1}. ${q.question}</p>
+      <p style="margin-bottom: 12px; font-weight: bold; line-height: 1.5;">Q${currentIndex + 1}. ${q.question}</p>
     `;
 
     if (q.type === "objective") {
@@ -177,37 +212,17 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>`;
       });
     } else {
-      // 서술형: 텍스트 입력 및 카메라/사진 촬영 업로드 기능 지원
+      // 서술형: 바로 직접 타이핑해서 서술형 답변을 입력하는 방식
       const savedText = typeof userAnswers[currentIndex] === 'string' ? userAnswers[currentIndex] : '';
       html += `
-        <div style="margin-bottom: 12px;">
-          <input type="text" id="subjectiveInput" value="${savedText}" placeholder="답안을 직접 입력하거나 아래에서 손글씨 사진을 첨부하세요.">
-        </div>
-        <div class="photo-upload-box">
-          <p style="font-size: 0.85rem; color: #555; margin-bottom: 8px;">📷 손글씨 답안 촬영 / 사진 첨부</p>
-          <input type="file" id="photoInput" accept="image/*" capture="environment">
-          <div id="imagePreviewContainer"></div>
+        <div class="subjective-box">
+          <p style="font-size: 0.85rem; color: #2c3e50; font-weight: bold; margin-bottom: 6px;">✍️ 서술형 답안 작성 (직접 입력):</p>
+          <input type="text" id="subjectiveInput" value="${savedText}" placeholder="여기에 정답(영작 문장 또는 한국어 답안)을 입력하세요...">
         </div>
       `;
     }
 
     questionContainer.innerHTML = html;
-
-    if (q.type === "subjective") {
-      const photoInput = document.getElementById("photoInput");
-      photoInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const imgContainer = document.getElementById("imagePreviewContainer");
-            imgContainer.innerHTML = `<img src="${event.target.result}" class="preview-img"><p style="font-size:0.75rem; color:green;">사진 첨부 완료!</p>`;
-            userAnswers[currentIndex] = "[사진 답안 첨부됨]";
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    }
   }
 
   nextBtn.addEventListener("click", () => {
@@ -225,12 +240,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else {
       const textVal = document.getElementById("subjectiveInput").value.trim();
-      if (!textVal && !userAnswers[currentIndex]) {
-        alert("답안을 입력하거나 손글씨 사진을 촬영해 주세요!");
+      if (!textVal) {
+        alert("서술형 답안을 입력해 주세요!");
         return;
       }
-      if (textVal) userAnswers[currentIndex] = textVal;
-      score += Math.round(100 / quizData.length); // 서술형 제출 시 기본 점수 부여
+      userAnswers[currentIndex] = textVal;
+      score += Math.round(100 / quizData.length);
     }
 
     currentIndex++;
@@ -252,8 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
       fbHtml += `
         <div style="margin-bottom: 12px; padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #3498db;">
           <p><b>Q${idx+1}. ${q.question}</b></p>
-          <p style="font-size: 0.9rem;">제출 답안: ${q.type === 'objective' ? q.options[userAns] : userAns}</p>
-          <p style="font-size: 0.85rem; color: #27ae60;">모범 답안: ${q.type === 'objective' ? q.options[q.answer] : q.answerText}</p>
+          <p style="font-size: 0.9rem;">내 제출 답안: ${q.type === 'objective' ? q.options[userAns] : userAns}</p>
+          <p style="font-size: 0.85rem; color: #27ae60;">모범 정답: ${q.type === 'objective' ? q.options[q.answer] : q.answerText}</p>
           <p style="font-size: 0.8rem; color: #555; margin-top: 4px;">💡 해설: ${q.explanation}</p>
         </div>`;
     });

@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>고등 영어 내신 서술형 & 객관식 트레이너</title>
+  <title>고등 영어 내신 서술형 & 내용이해 트레이너</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- OCR(사진 텍스트 추출) 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
   <!-- ES 모듈 맵 설정 -->
   <script type="importmap">
@@ -18,8 +21,8 @@
 <body>
   <div class="container">
     <header>
-      <h1>📚 고등 영어 내신 서술형 트레이너</h1>
-      <p class="subtitle">모바일 최적화 · 어휘/어법/서술형 손글씨 채점 지원</p>
+      <h1>📚 고등 영어 내신 서술형 & 내용이해 트레이너</h1>
+      <p class="subtitle">모바일 최적화 · 지문 사진 촬영 OCR · 내용이해 & 영작 집중 대비</p>
     </header>
 
     <!-- 0단계: API 키 설정 -->
@@ -36,15 +39,23 @@
     <!-- 1단계: 지문 입력 및 설정 -->
     <section class="card" id="step-input">
       <h2>1단계: 시험 범위 지문 입력</h2>
-      <p class="desc">오늘 공부할 모의고사나 교과서 지문을 붙여넣으세요.</p>
-      <textarea id="passageInput" placeholder="지문을 입력하세요... (예: Environmental shampoo can impact wildlife...)"></textarea>
+      <p class="desc">지문을 직접 입력하거나, 📸 지문 사진을 촬영하여 텍스트를 추출하세요.</p>
+      
+      <!-- OCR 사진 업로드 영역 -->
+      <div class="ocr-box">
+        <label for="passagePhotoInput" class="btn ocr-btn">📷 지문 사진 촬영 / 첨부하여 텍스트 추출</label>
+        <input type="file" id="passagePhotoInput" accept="image/*" capture="environment" style="display: none;">
+        <div id="ocrStatus" class="status-msg"></div>
+      </div>
+
+      <textarea id="passageInput" placeholder="여기에 지문이 입력됩니다... (사진 촬영 시 자동으로 채워집니다)"></textarea>
       
       <div class="option-group">
         <label>문제 출제 유형:</label>
         <select id="quizTypeSelect">
-          <option value="mixed">전체 혼합 (객관식 + 서술형 영작)</option>
+          <option value="mixed">전체 혼합 (내용이해 + 어법/어휘 + 서술형 영작)</option>
+          <option value="comprehension">내용 이해 & Q&A 질문 전용</option>
           <option value="subjective">서술형 / 조건부 영작 전용</option>
-          <option value="vocab">어휘 & 어법 집중</option>
         </select>
       </div>
 
@@ -54,7 +65,7 @@
     <!-- 로딩 화면 -->
     <section class="card loading-card" id="step-loading" style="display: none;">
       <div class="spinner"></div>
-      <p id="loadingText">AI가 내신 출제 경향을 분석하여 10문제를 생성 중입니다...</p>
+      <p id="loadingText">AI가 지문 내용과 서술형 출제 포인트를 분석하여 10문제를 생성 중입니다...</p>
     </section>
 
     <!-- 2단계: 퀴즈 풀이 영역 -->
@@ -64,9 +75,7 @@
         <span id="scoreBadge">점수: 0점</span>
       </div>
       
-      <div id="questionContainer" class="question-box">
-        <!-- 지문, 문제, 보기 or 서술형 사진 업로드 영역이 동적으로 들어갑니다 -->
-      </div>
+      <div id="questionContainer" class="question-box"></div>
 
       <div class="quiz-footer">
         <button id="nextBtn" class="btn primary">다음 문제</button>
