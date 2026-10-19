@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>고등 영어 내신 서술형 트레이너</title>
+  <title>고등 영어 내신 서술형 & 객관식 트레이너</title>
   <link rel="stylesheet" href="style.css">
 
   <!-- ES 모듈 맵 설정 -->
@@ -19,13 +19,13 @@
   <div class="container">
     <header>
       <h1>📚 고등 영어 내신 서술형 트레이너</h1>
-      <p class="subtitle">모바일 최적화 · 어휘/어법/대화문 집중 대비</p>
+      <p class="subtitle">모바일 최적화 · 어휘/어법/서술형 손글씨 채점 지원</p>
     </header>
 
     <!-- 0단계: API 키 설정 -->
     <section class="card" id="step-api">
       <h2>0단계: Gemini API 키 설정</h2>
-      <p class="desc">Google AI Studio에서 발급받은 API 키를 입력해주세요. (한 번 입력하면 자동 저장됩니다)</p>
+      <p class="desc">Google AI Studio API 키를 입력해주세요. (자동 저장됩니다)</p>
       <div class="input-group">
         <input type="password" id="apiKeyInput" placeholder="AIzaSy... 로 시작하는 API 키 입력">
         <button id="saveApiKeyBtn" class="btn secondary">저장</button>
@@ -33,29 +33,28 @@
       <div id="apiKeyStatus" class="status-msg"></div>
     </section>
 
-    <!-- 1단계: 지문 입력 -->
+    <!-- 1단계: 지문 입력 및 설정 -->
     <section class="card" id="step-input">
-      <h2>1단계: 오늘의 시험 범위 지문 입력</h2>
+      <h2>1단계: 시험 범위 지문 입력</h2>
       <p class="desc">오늘 공부할 모의고사나 교과서 지문을 붙여넣으세요.</p>
-      <textarea id="passageInput" placeholder="예: Environmental shampoo can significantly impact wildlife habitats..."></textarea>
+      <textarea id="passageInput" placeholder="지문을 입력하세요... (예: Environmental shampoo can impact wildlife...)"></textarea>
       
       <div class="option-group">
-        <label>문제 유형 선택:</label>
+        <label>문제 출제 유형:</label>
         <select id="quizTypeSelect">
-          <option value="mixed">전체 혼합 (어휘 + 어법 + 대화문)</option>
-          <option value="vocab">어휘 집중 공략</option>
-          <option value="grammar">어법 집중 공략</option>
-          <option value="conversation">대화문/흐름 집중 공략</option>
+          <option value="mixed">전체 혼합 (객관식 + 서술형 영작)</option>
+          <option value="subjective">서술형 / 조건부 영작 전용</option>
+          <option value="vocab">어휘 & 어법 집중</option>
         </select>
       </div>
 
-      <button id="generateBtn" class="btn primary">🚀 문제 생성하기</button>
+      <button id="generateBtn" class="btn primary">🚀 10문제 생성하기</button>
     </section>
 
     <!-- 로딩 화면 -->
     <section class="card loading-card" id="step-loading" style="display: none;">
       <div class="spinner"></div>
-      <p id="loadingText">AI가 내신 출제 경향을 분석하여 문제를 만드는 중입니다...</p>
+      <p id="loadingText">AI가 내신 출제 경향을 분석하여 10문제를 생성 중입니다...</p>
     </section>
 
     <!-- 2단계: 퀴즈 풀이 영역 -->
@@ -64,11 +63,12 @@
         <span id="quizProgress">문제 1 / 10</span>
         <span id="scoreBadge">점수: 0점</span>
       </div>
+      
       <div id="questionContainer" class="question-box">
-        <!-- 문제가 동적으로 들어갑니다 -->
+        <!-- 지문, 문제, 보기 or 서술형 사진 업로드 영역이 동적으로 들어갑니다 -->
       </div>
+
       <div class="quiz-footer">
-        <button id="prevBtn" class="btn secondary" style="display: none;">이전</button>
         <button id="nextBtn" class="btn primary">다음 문제</button>
       </div>
     </section>
@@ -82,7 +82,6 @@
     </section>
   </div>
 
-  <!-- 메인 스크립트 연결 (ES 모듈) -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
