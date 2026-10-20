@@ -82,6 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
   cropExtractBtn.addEventListener("click", async () => {
     if (!cropper) return;
 
+    const apiKey = currentApiKey || localStorage.getItem("gemini_api_key");
+    if (!apiKey) {
+      alert("0단계에서 Gemini API 키를 먼저 입력하고 [저장]을 눌러주세요!");
+      cropModal.style.display = "none";
+      return;
+    }
+
     const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
     const base64Image = canvas.toDataURL("image/jpeg").split(",")[1];
 
@@ -90,13 +97,13 @@ document.addEventListener("DOMContentLoaded", () => {
     ocrStatus.style.color = "#3498db";
 
     try {
-      const extractedText = await extractTextWithGeminiVision(base64Image, currentApiKey);
+      const extractedText = await extractTextWithGeminiVision(base64Image, apiKey);
       passageInput.value = extractedText;
       ocrStatus.textContent = "✅ 지문 정밀 인식 완료! (오류 및 옆 문제 자동 제거됨)";
       ocrStatus.style.color = "green";
     } catch (err) {
       console.error(err);
-      ocrStatus.textContent = "❌ AI 인식 실패 (API 키 확인 필요). 지문을 직접 복사/입력해 주세요.";
+      ocrStatus.textContent = "❌ AI 인식 실패: API 키가 올바른지 확인해주세요.";
       ocrStatus.style.color = "red";
     }
   });
