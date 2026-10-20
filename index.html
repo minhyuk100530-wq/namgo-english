@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
+  <!-- Tesseract.js (무료 안심 OCR) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
   <!-- ES 모듈 맵 설정 -->
   <script type="importmap">
     {
@@ -23,7 +26,7 @@
   <div class="container">
     <header>
       <h1>📚 고등 영어 내신 서술형 & 내용이해 트레이너</h1>
-      <p class="subtitle">모바일 최적화 · 지문 영역 자르기 AI OCR · 서술형 집중 대비</p>
+      <p class="subtitle">모바일 최적화 · 지문 영역 자르기 OCR · 서술형 집중 대비</p>
     </header>
 
     <!-- 0단계: API 키 설정 -->
@@ -61,7 +64,7 @@
         </div>
       </div>
 
-      <textarea id="passageInput" placeholder="여기에 지문이 입력됩니다... (사진 자르기 시 AI가 지문만 정밀하게 정제하여 채워줍니다)"></textarea>
+      <textarea id="passageInput" placeholder="여기에 지문이 입력됩니다... (사진 자르기 시 지문 텍스트가 정제되어 채워집니다)"></textarea>
       
       <div class="option-group">
         <label>문제 출제 유형:</label>

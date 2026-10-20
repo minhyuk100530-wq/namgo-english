@@ -78,53 +78,55 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cropper) cropper.destroy();
   });
 
-  // 자른 영역 Gemini AI Vision으로 정밀 OCR 처리
+  // 자른 영역 안정적인 Tesseract OCR + Gemini 텍스트 보정
   cropExtractBtn.addEventListener("click", async () => {
     if (!cropper) return;
 
-    const apiKey = currentApiKey || localStorage.getItem("gemini_api_key");
-    if (!apiKey) {
-      alert("0단계에서 Gemini API 키를 먼저 입력하고 [저장]을 눌러주세요!");
-      cropModal.style.display = "none";
-      return;
-    }
-
     const canvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
-    const base64Image = canvas.toDataURL("image/jpeg").split(",")[1];
-
     cropModal.style.display = "none";
-    ocrStatus.textContent = "🤖 Gemini AI가 지문만 정확하게 분석 및 인식을 진행하고 있습니다...";
+    
+    ocrStatus.textContent = "🔍 선택 영역에서 글자를 추출하는 중입니다...";
     ocrStatus.style.color = "#3498db";
 
     try {
-      const extractedText = await extractTextWithGeminiVision(base64Image, apiKey);
+      // 1단계: 브라우저 온디바이스 Tesseract OCR로 무조건 성공적인 글자 읽기
+      const rawResult = await Tesseract.recognize(canvas, 'eng');
+      let extractedText = rawResult.data.text.trim();
+
+      if (!extractedText) {
+        ocrStatus.textContent = "❌ 선명한 영문 글자를 찾지 못했습니다. 지문을 다시 촬영해 주세요.";
+        ocrStatus.style.color = "red";
+        return;
+      }
+
+      const apiKey = currentApiKey || localStorage.getItem("gemini_api_key");
+      // 2단계: API 키가 있으면 Gemini가 텍스트 오탈자 및 문맥을 정제해줌
+      if (apiKey) {
+        ocrStatus.textContent = "✨ AI가 지문 오탈자를 정제하고 문장을 가다듬는 중입니다...";
+        try {
+          extractedText = await cleanTextWithGemini(extractedText, apiKey);
+        } catch (aiErr) {
+          console.warn("AI 텍스트 정제 실패 (기본 OCR 결과로 대체합니다)", aiErr);
+        }
+      }
+
       passageInput.value = extractedText;
-      ocrStatus.textContent = "✅ 지문 정밀 인식 완료! (오류 및 옆 문제 자동 제거됨)";
+      ocrStatus.textContent = "✅ 지문 인식 성공!";
       ocrStatus.style.color = "green";
     } catch (err) {
       console.error(err);
-      ocrStatus.textContent = "❌ AI 인식 실패: API 키가 올바른지 확인해주세요.";
+      ocrStatus.textContent = "❌ 인식 오류가 발생했습니다. 지문을 직접 입력해 주세요.";
       ocrStatus.style.color = "red";
     }
   });
 
-  async function extractTextWithGeminiVision(base64Image, apiKey) {
-    if (!apiKey) throw new Error("No API key");
+  async function cleanTextWithGemini(rawText, apiKey) {
     const ai = new GoogleGenAI({ apiKey: apiKey });
-
-    const prompt = "이 사진에서 영어 시험지 지문 텍스트만 완벽하게 추출해줘. 문제 번호(예: 37번, 39번 등)나 주변에 걸쳐진 다른 문제, 한글 설명은 모두 제외하고 오직 영어 본문 지문 내용만 자연스럽게 연결된 완성된 텍스트로 복원해서 출력해줘.";
+    const prompt = `다음은 OCR로 인식한 영어 시험지 지문 텍스트입니다. 오탈자나 불필요한 줄바꿈, 이상한 기호를 수정하고 매끄럽고 완벽한 영어 본문 지문 문장으로 복원해줘. 다른 설명 없이 완성된 본문 텍스트만 출력해줘.\n\n[원본]:\n${rawText}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: [
-        {
-          inlineData: {
-            mimeType: "image/jpeg",
-            data: base64Image
-          }
-        },
-        prompt
-      ]
+      contents: prompt,
     });
 
     return response.text.trim();
