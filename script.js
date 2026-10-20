@@ -4,16 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiKeyInput = document.getElementById("apiKeyInput");
   const saveApiKeyBtn = document.getElementById("saveApiKeyBtn");
   const apiKeyStatus = document.getElementById("apiKeyStatus");
+  const targetKeywordInput = document.getElementById("targetKeywordInput");
   const passageInput = document.getElementById("passageInput");
-  const passagePhotoInput = document.getElementById("passagePhotoInput");
-  const ocrStatus = document.getElementById("ocrStatus");
-  const cropModal = document.getElementById("cropModal");
-  const cropImage = document.getElementById("cropImage");
-  const cropExtractBtn = document.getElementById("cropExtractBtn");
-  const cropCancelBtn = document.getElementById("cropCancelBtn");
-  
   const quizTypeSelect = document.getElementById("quizTypeSelect");
   const generateBtn = document.getElementById("generateBtn");
+
+  const searchBoxGroup = document.getElementById("searchBoxGroup");
+  const directBoxGroup = document.getElementById("directBoxGroup");
+  const inputModeRadios = document.querySelectorAll('input[name="inputMode"]');
 
   const stepApi = document.getElementById("step-api");
   const stepInput = document.getElementById("step-input");
@@ -29,7 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  let cropper = null;
+  // 모드 전환 (키워드 검색 vs 직접 입력)
+  inputModeRadios.forEach(radio => {
+    radio.addEventListener("change", (e) => {
+      if (e.target.value === "search") {
+        searchBoxGroup.style.display = "block";
+        directBoxGroup.style.display = "none";
+      } else {
+        searchBoxGroup.style.display = "none";
+        directBoxGroup.style.display = "block";
+      }
+    });
+  });
 
   let currentApiKey = localStorage.getItem("gemini_api_key") || "";
   if (currentApiKey) {
@@ -50,91 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
     apiKeyStatus.style.color = "green";
   });
 
-  // 사진 선택 시 Cropper 초기화
-  passagePhotoInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      cropImage.src = event.target.result;
-      cropModal.style.display = "block";
-
-      if (cropper) {
-        cropper.destroy();
-      }
-
-      cropper = new Cropper(cropImage, {
-        viewMode: 1,
-        autoCropArea: 0.9,
-        responsive: true
-      });
-    };
-    reader.readAsDataURL(file);
-  });
-
-  cropCancelBtn.addEventListener("click", () => {
-    cropModal.style.display = "none";
-    if (cropper) cropper.destroy();
-  });
-
-  // 자른 영역을 고성능 Gemini Vision AI로 전송하여 시각적 정밀 인식
-  cropExtractBtn.addEventListener("click", async () => {
-    if (!cropper) return;
-
-    const apiKey = currentApiKey || localStorage.getItem("gemini_api_key");
-    if (!apiKey) {
-      alert("0단계에서 Gemini API 키를 먼저 입력하고 [저장]을 눌러주세요!\n(이미지 인식은 API 키가 꼭 필요합니다)");
-      return;
-    }
-
-    // AI API 전송에 적합한 최적 해상도로 크롭 캔버스 추출
-    const canvas = cropper.getCroppedCanvas({ maxWidth: 1280, maxHeight: 1280 });
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    const base64Image = dataUrl.split(",")[1];
-
-    cropModal.style.display = "none";
-    ocrStatus.textContent = "🤖 Gemini Vision AI가 지문을 시각 분석하여 텍스트를 정밀 추출 중입니다...";
-    ocrStatus.style.color = "#3498db";
-
-    try {
-      const extractedText = await extractTextWithGeminiVision(base64Image, apiKey);
-      passageInput.value = extractedText;
-      ocrStatus.textContent = "✅ 지문 정밀 인식 성공! (오타 및 타 문제 번호 완전 제거됨)";
-      ocrStatus.style.color = "green";
-    } catch (err) {
-      console.error(err);
-      ocrStatus.textContent = "❌ AI 이미지 인식 실패: API 키가 유효한지 확인 후 다시 시도해 주세요.";
-      ocrStatus.style.color = "red";
-    }
-  });
-
-  async function extractTextWithGeminiVision(base64Data, apiKey) {
-    const ai = new GoogleGenAI({ apiKey: apiKey });
-
-    const prompt = `이 이미지에 포함된 영어 지문 텍스트를 정확하게 읽어서 정제된 영어 본문 텍스트로만 출력해줘.
-    
-    [필수 주의사항]
-    1. 문제 번호(예: 37번, 38번, 39번 등)나 보기 항목(①, ②, ③, ④)은 완전히 제거할 것.
-    2. 주변에 살짝 걸친 다른 문제의 문장은 제외하고, 해당 메인 영어 지문만 자연스럽게 연결된 문장으로 만들어 출력할 것.
-    3. 다른 어떤 인사말이나 설명, 백틱 마크 없이 '순수 영어 지문 텍스트'만 반환할 것.`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          inlineData: {
-            mimeType: "image/jpeg",
-            data: base64Data
-          }
-        },
-        prompt
-      ]
-    });
-
-    return response.text.trim();
-  }
-
   let quizData = [];
   let currentPassage = "";
   let currentIndex = 0;
@@ -142,19 +66,38 @@ document.addEventListener("DOMContentLoaded", () => {
   let score = 0;
 
   generateBtn.addEventListener("click", async () => {
-    const passage = passageInput.value.trim();
-    if (!passage) {
-      alert("지문을 입력하거나 사진 촬영으로 지문을 추가해 주세요.");
-      return;
+    const currentMode = document.querySelector('input[name="inputMode"]:checked').value;
+    let promptInputText = "";
+
+    if (currentMode === "search") {
+      const keyword = targetKeywordInput.value.trim();
+      if (!keyword) {
+        alert("시험 범위(예: 미래엔 공통영어2 2과 / 고1 6월 모의고사 32번)를 입력해 주세요.");
+        return;
+      }
+      
+      promptInputText = `[지정한 시험 범위 키워드]: ${keyword}
+      * 지시사항: 
+        1. 위 키워드가 '미래엔 공통영어2(김성연)' 교과서 관련이면 해당 단원(Lesson 1~4: Dark patterns, AI Neural Implants 등)의 실제 영어 본문 텍스트 및 주제를 상기하여 문제를 생성해줘.
+        2. 위 키워드가 모의고사(예: 6월/9월 모의고사 번호) 관련이면 해당 기출 지문 원문을 상기하여 생성해줘.`;
+      
+      currentPassage = `[시험 범위: ${keyword}] 지문을 바탕으로 출제된 내신 대비 10문제입니다.`;
+    } else {
+      const passage = passageInput.value.trim();
+      if (!passage) {
+        alert("지문 원문을 입력해 주세요.");
+        return;
+      }
+      promptInputText = `[입력된 영어 지문]: ${passage}`;
+      currentPassage = passage;
     }
-    currentPassage = passage;
 
     stepInput.style.display = "none";
     stepApi.style.display = "none";
     stepLoading.style.display = "block";
 
     try {
-      quizData = await fetchQuizFromGemini(passage, quizTypeSelect.value, currentApiKey);
+      quizData = await fetchQuizFromGemini(promptInputText, quizTypeSelect.value, currentApiKey);
     } catch (err) {
       console.warn("AI 호출 실패/키 미입력: 오프라인 10문제 풀을 사용합니다.", err);
       quizData = getFallbackQuizPool();
@@ -168,13 +111,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderQuestion();
   });
 
-  async function fetchQuizFromGemini(passage, type, apiKey) {
+  async function fetchQuizFromGemini(inputText, type, apiKey) {
     if (!apiKey) throw new Error("No API key");
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
-    const prompt = `다음 고등학교 영어 지문을 바탕으로 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
+    const prompt = `다음 지정된 고등학교 영어 시험 범위 또는 지문을 바탕으로 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
     유형 선택: ${type}
-    지문 내용: ${passage}
+    ${inputText}
     
     [출제 가이드라인]
     1. 구성: 
@@ -350,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stepResult.style.display = "none";
     stepInput.style.display = "block";
     stepApi.style.display = "block";
+    targetKeywordInput.value = "";
     passageInput.value = "";
   });
 });
