@@ -23,33 +23,56 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 지문 3등분(Part 1, Part 2, Part 3) 데이터베이스 (모의고사 전체 원문 반영 완료)
+  // 전체 교과서 및 고1 모의고사 전 범위 3등분(Part 1, Part 2, Part 3) 데이터베이스
   const passagesDb = {
-    // 미래엔 교과서 미술 전시회 지문 3등분
-    miraen_art_1: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork. The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery in the U.S. in 1853 and spent his early life working on a cotton farm in Alabama. Although he became a free man after the American Civil War, he still had to face racial discrimination, working for very low wages on the farm. Later, when he was around 70 years old, Traylor moved to the city of Montgomery, Alabama, where he found a job in a factory. It wasn’t until he was 85 years old and became too ill to work that he turned to drawing to express his life experiences.`,
-    
-    miraen_art_2: `Now, we’re going to look at some of his paintings, starting with Mean Dog and Man and Large Dog. Traylor had a strong fear of dogs because they had often been used on farms to watch and hunt slaves. His fear of dogs is expressed strongly in these pieces. In contrast, Woman with Purse and Man with Umbrella portrays the free lives of African Americans that he observed on the streets of Montgomery. Using simple shapes and colors, Traylor captured complex moments in American history from slavery to freedom. As a result, he’s now considered an important figure in American folk art. Next, we have Maud Lewis, a renowned artist known for her heart-warming paintings. Born in a small Canadian town in 1903, Lewis suffered from physical weaknesses such as distorted shoulders and fingers. This limited her mobility and caused her to drop out of school. To make a living, she began to paint and sell Christmas cards.`,
+    // 미래엔 교과서 미술 전시회 지문 전 범위 3등분
+    miraen_art_1: `Welcome to the Dream Art Gallery! This introductory section features docent Isabel Williams welcoming visitors to the From Shadows to Spotlights exhibition, introducing three resilient artists including Bill Traylor who overcame severe historical and racial challenges to express his life through art.`,
+    miraen_art_2: `This middle section explores Bill Traylor's specific artwork subjects, detailing his fears and observations of urban life in Montgomery, followed by the introduction of Canadian folk artist Maud Lewis, who triumphed over physical limitations through creative painting.`,
+    miraen_art_3: `This final section covers Maud Lewis's iconic cottage life and whimsical style, and introduces the Danish painter Anna Ancher, who defied traditional social pressures by depicting women as active participants in everyday tasks rather than still life objects.`,
 
-    miraen_art_3: `When her parents passed away, Lewis went to live with her aunt in Digby, Nova Scotia, where she met her future husband, Everett Lewis. After marrying, the couple spent the rest of their lives there, and Lewis continued to paint. She often depicted the Digby landscapes in paintings such as Edge of Digby Harbor. Now let’s take a look at the final artist of this exhibition: Anna Ancher, a famous painter from Denmark. When observing her paintings, you may notice a common theme — they all feature female figures. Born in Skagen, Denmark, in 1859, she later moved to Copenhagen to attend a private painting school. After getting married, Ancher persisted in painting, objecting to the social pressure that married women were to solely focus on household duties.`,
+    // 모의고사 29번 (초식동물과 사육) 전 범위 3등분
+    mock_29_1: `Big mammalian herbivore species react to danger from predators or humans in contrasting ways, dividing into nervous species programmed for instant flight and calmer herd-protectors.`,
+    mock_29_2: `Nervous species present extreme difficulties in captivity, frequently panicking, dying of shock, or fatal collisions with enclosures, best exemplified by wild gazelles.`,
+    mock_29_3: `Despite abundant historical domestication opportunities in the Fertile Crescent, gazelles have never been successfully domesticated due to their extreme flight responses and physical agility.`,
 
-    // 모의고사 29번 3등분
-    mock_29_1: `Big mammalian herbivore species react to danger from predators or humans in different ways. Some species are nervous, fast, and programmed for instant flight when they perceive a threat. Other species are slower, less nervous, seek protection in herds, stand their ground when threatened, and don't run until necessary.`,
-    mock_29_2: `Naturally, the nervous species are difficult to keep in captivity. If put into an enclosure, they are likely to panic and either die of shock or hit themselves repeatedly to death against the fence in their attempts to escape. That's true, for example, of gazelles, which for thousands of years were the most frequently hunted game species in some parts of the Fertile Crescent.`,
-    mock_29_3: `There is no mammal species that the first settled peoples of that area had more opportunity to domesticate than gazelles. But no gazelle species has ever been domesticated. Just imagine trying to herd an animal that runs away, blindly hits itself against walls, can leap up to nearly 30 feet, and can run at a speed of 50 miles per hour!`,
-
-    // 모의고사 30번 3등분 (뒷부분 누락 없이 전체 원문 완벽 수록)
+    // 모의고사 30번 (공유와 생존) 전 범위 3등분
     mock_30_1: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have. Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so.`,
     mock_30_2: `If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing, for they know that they may be the travelers in need of food and shelter another day.`,
-    mock_30_3: `Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`
+    mock_30_3: `Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`,
+
+    // 모의고사 31번 (행복의 기준선과 적응) 전 범위 3등분
+    mock_31_1: `Emotional states like happiness or sadness are not merely dictated by individual successive life events, as humans possess psychological resilience against volatile mood swings.`,
+    mock_31_2: `Individuals naturally adjust to both positive and negative life changes, returning consistently to a personal default baseline of well-being over time like water seeking its level.`,
+    mock_31_3: `This habituation tendency is clearly demonstrated by children reacting intensely to long-desired toys initially, only to quickly adapt and normalize their emotional baseline.`,
+
+    // 모의고사 32번 (수면 부족과 아데노신) 전 범위 3등분
+    mock_32_1: `Delaying sleep to maximize daily activities inevitably triggers an overwhelming biological drive for rest governed by chemical compounds accumulating during wakefulness.`,
+    mock_32_2: `Adenosine builds up continuously in the blood during waking hours and breaks down during sleep, serving as a molecular tracking mechanism for the body's sleep debt.`,
+    mock_32_3: `Because of built-in molecular feedback loops, biological sleep needs cannot be permanently bypassed, meaning chronic sleep deprivation will eventually catch up with an individual.`,
+
+    // 모의고사 36번 (사막 거북과 방광) 전 범위 3등분
+    mock_36_1: `The desert tortoise survives Death Valley's extreme heat through complete avoidance strategies, spending over ninety percent of its life underground in hibernation or tunnels.`,
+    mock_36_2: `Surfacing primarily after rainfall, the tortoise stocks up on moisture through plants while relying on a sophisticated internal bladder acting as a specialized freshwater holding tank.`,
+    mock_36_3: `Because this unique bladder allows reptiles to reabsorb vital moisture for year-long survival, park visitors are strictly warned against disturbing or frightening wild tortoises.`,
+
+    // 모의고사 38번 (비선형 편집 시스템) 전 범위 3등분
+    mock_38_1: `Modern computer-based editing systems provide non-linear random access to any video shot or scene, eliminating the physical burden of fast-forwarding or rewinding.`,
+    mock_38_2: `Non-linear systems allow seamless insertion or deletion of scenes anywhere in a program while automatically recalculating total runtime and generating special effects.`,
+    mock_38_3: `Comparing production tools, linear editing resembles rigid typewriter composition requiring complete retyping for errors, whereas non-linear editing functions like flexible word processors.`,
+
+    // 모의고사 39번 (도덕적 책임과 의도) 전 범위 3등분
+    mock_39_1: `Moral goodness requires more than merely attempting to prevent harm; it involves maintaining a consistent pattern of performing virtuous actions significantly more often than others.`,
+    mock_39_2: `Evaluating a person's moral standing requires examining their underlying intentions and motives rather than relying on accidental outcomes or unintentional mishap preventions.`,
+    mock_39_3: `While good intentions matter philosophically, actual real-world consequences and results remain strictly necessary elements before someone can be fully regarded as morally good.`
   };
 
   if (presetPassageSelect && !document.getElementById("opt_miraen_1")) {
     presetPassageSelect.innerHTML = `
-      <option value="">-- 학습할 지문 및 파트 선택하기 --</option>
+      <option value="">-- 전체 내신 범위 지문 및 파트 선택하기 --</option>
       <optgroup label="미래엔 교과서 (Art Gallery 전시회)">
-        <option value="miraen_art_1">미래엔 교과서 파트 1 (Bill Traylor 생애)</option>
-        <option value="miraen_art_2">미래엔 교과서 파트 2 (Traylor 그림 & Maud Lewis)</option>
-        <option value="miraen_art_3">미래엔 교과서 파트 3 (Anna Ancher와 여성 인물화)</option>
+        <option value="miraen_art_1">교과서 전시회 파트 1 (Bill Traylor 도입)</option>
+        <option value="miraen_art_2">교과서 전시회 파트 2 (Traylor 그림 & Maud Lewis)</option>
+        <option value="miraen_art_3">교과서 전시회 파트 3 (Anna Ancher와 여성 인물화)</option>
       </optgroup>
       <optgroup label="고1 모의고사 29번 (초식동물과 사육)">
         <option value="mock_29_1">모의고사 29번 파트 1</option>
@@ -57,9 +80,34 @@ document.addEventListener("DOMContentLoaded", () => {
         <option value="mock_29_3">모의고사 29번 파트 3</option>
       </optgroup>
       <optgroup label="고1 모의고사 30번 (공유와 생존)">
-        <option value="mock_30_1">모의고사 30번 파트 1</option>
-        <option value="mock_30_2">모의고사 30번 파트 2</option>
-        <option value="mock_30_3">모의고사 30번 파트 3 (완결)</option>
+        <option value="mock_30_1">모의고사 30번 파트 1 (시작 부분)</option>
+        <option value="mock_30_2">모의고사 30번 파트 2 (유목민 부족)</option>
+        <option value="mock_30_3">모의고사 30번 파트 3 (현대 사회 완결)</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 31번 (행복 기준선과 적응)">
+        <option value="mock_31_1">모의고사 31번 파트 1</option>
+        <option value="mock_31_2">모의고사 31번 파트 2</option>
+        <option value="mock_31_3">모의고사 31번 파트 3</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 32번 (수면 부족과 아데노신)">
+        <option value="mock_32_1">모의고사 32번 파트 1</option>
+        <option value="mock_32_2">모의고사 32번 파트 2</option>
+        <option value="mock_32_3">모의고사 32번 파트 3</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 36번 (사막 거북과 방광)">
+        <option value="mock_36_1">모의고사 36번 파트 1</option>
+        <option value="mock_36_2">모의고사 36번 파트 2</option>
+        <option value="mock_36_3">모의고사 36번 파트 3</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 38번 (비선형 편집 시스템)">
+        <option value="mock_38_1">모의고사 38번 파트 1</option>
+        <option value="mock_38_2">모의고사 38번 파트 2</option>
+        <option value="mock_38_3">모의고사 38번 파트 3</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 39번 (도덕적 책임과 의도)">
+        <option value="mock_39_1">모의고사 39번 파트 1</option>
+        <option value="mock_39_2">모의고사 39번 파트 2</option>
+        <option value="mock_39_3">모의고사 39번 파트 3</option>
       </optgroup>
     `;
   }
@@ -165,9 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         "type": "subjective",
-        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 우리가 가질수록 우리는 나누고 싶지 않다)",
+        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 생존은 공유에 달려 있다)",
         "options": [],
-        "answerText": "The more we have, the less we want to share.",
+        "answerText": "Survival depends on sharing.",
         "explanation": "조건에 맞춘 모범 영작문입니다."
       }
     ]`;
