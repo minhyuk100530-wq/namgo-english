@@ -19,7 +19,7 @@
   <div class="container">
     <header>
       <h1>📚 고등 영어 내신 서술형 & 내용이해 트레이너</h1>
-      <p class="subtitle">모바일 최적화 · 미래엔 공통영어2 & 모의고사 자동 출제 · 서술형 대비</p>
+      <p class="subtitle">모바일 최적화 · 미래엔 교과서 & 모의고사 지문 저장고 · 서술형 대비</p>
     </header>
 
     <!-- 0단계: API 키 설정 -->
@@ -33,35 +33,30 @@
       <div id="apiKeyStatus" class="status-msg"></div>
     </section>
 
-    <!-- 1단계: 지문 키워드 선택 또는 입력 -->
+    <!-- 1단계: 지문 선택 또는 입력 -->
     <section class="card" id="step-input">
-      <h2>1단계: 시험 범위 지정</h2>
-      <p class="desc">공부할 교과서 단원이나 모의고사 번호를 지정하세요.</p>
+      <h2>1단계: 시험 범위 지정 (지문 저장고)</h2>
+      <p class="desc">등록된 교과서 본문이나 모의고사 지문을 선택하거나 직접 입력하세요.</p>
       
-      <!-- 입력 방식 선택 라디오 버튼 -->
-      <div class="input-mode-selector">
-        <label>
-          <input type="radio" name="inputMode" value="search" checked> 🔍 범위 검색 (미래엔 공통영어2 / 모의고사)
-        </label>
-        <label>
-          <input type="radio" name="inputMode" value="direct"> ✍️ 지문 직접 복사·붙여넣기
-        </label>
+      <!-- 저장된 지문 선택 드롭다운 -->
+      <div class="option-group">
+        <label>📖 저장된 지문 바로 선택하기:</label>
+        <select id="presetPassageSelect">
+          <option value="">-- 지문 선택하기 --</option>
+          <option value="miraen_art">미래엔 공통영어2: From Shadows to Spotlights (Bill Traylor, Maud Lewis, Anna Ancher)</option>
+          <option value="mock_29">고1 모의고사 29번: Herbivore species and captivity</option>
+          <option value="mock_30">고1 모의고사 30번: Sharing and resources (Nomadic tribes)</option>
+          <option value="mock_31">고1 모의고사 31번: Happiness baseline and adaptation</option>
+          <option value="mock_32">고1 모의고사 32번: Adenosine and sleep debt</option>
+          <option value="mock_36">고1 모의고사 36번: Desert tortoise and bladder</option>
+          <option value="mock_38">고1 모의고사 38번: Nonlinear editing systems</option>
+          <option value="mock_39">고1 모의고사 39번: Moral responsibility and intentions</option>
+        </select>
       </div>
 
-      <!-- 모의고사/교과서 키워드 검색 방식 -->
-      <div id="searchBoxGroup" class="mode-group">
-        <div class="input-field-group">
-          <label>시험 범위 입력 예시:</label>
-          <input type="text" id="targetKeywordInput" placeholder="예: 미래엔 공통영어2 2과 / 고1 6월 모의고사 32번 / 미래엔 공통영어2 4과">
-        </div>
-      </div>
-
-      <!-- 지문 직접 입력 방식 -->
-      <div id="directBoxGroup" class="mode-group" style="display: none;">
-        <div class="input-field-group">
-          <label>영어 지문 원문 붙여넣기:</label>
-          <textarea id="passageInput" placeholder="카페나 학습지 등에서 복사한 영어 지문을 여기에 붙여넣으세요..."></textarea>
-        </div>
+      <div class="input-field-group" style="margin-top: 12px;">
+        <label>선택되거나 직접 입력된 지문 원문:</label>
+        <textarea id="passageInput" placeholder="위에서 지문을 선택하면 원문이 여기에 자동으로 채워집니다..."></textarea>
       </div>
       
       <div class="option-group">
@@ -79,7 +74,7 @@
     <!-- 로딩 화면 -->
     <section class="card loading-card" id="step-loading" style="display: none;">
       <div class="spinner"></div>
-      <p id="loadingText">AI가 지정한 시험 범위의 지문을 분석하여 10문제를 생성 중입니다...</p>
+      <p id="loadingText">AI가 지문 내용과 서술형 출제 포인트를 분석하여 10문제를 생성 중입니다...</p>
     </section>
 
     <!-- 2단계: 퀴즈 풀이 영역 -->

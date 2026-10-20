@@ -4,14 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiKeyInput = document.getElementById("apiKeyInput");
   const saveApiKeyBtn = document.getElementById("saveApiKeyBtn");
   const apiKeyStatus = document.getElementById("apiKeyStatus");
-  const targetKeywordInput = document.getElementById("targetKeywordInput");
+  const presetPassageSelect = document.getElementById("presetPassageSelect");
   const passageInput = document.getElementById("passageInput");
   const quizTypeSelect = document.getElementById("quizTypeSelect");
   const generateBtn = document.getElementById("generateBtn");
-
-  const searchBoxGroup = document.getElementById("searchBoxGroup");
-  const directBoxGroup = document.getElementById("directBoxGroup");
-  const inputModeRadios = document.querySelectorAll('input[name="inputMode"]');
 
   const stepApi = document.getElementById("step-api");
   const stepInput = document.getElementById("step-input");
@@ -27,17 +23,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 모드 전환 (키워드 검색 vs 직접 입력)
-  inputModeRadios.forEach(radio => {
-    radio.addEventListener("change", (e) => {
-      if (e.target.value === "search") {
-        searchBoxGroup.style.display = "block";
-        directBoxGroup.style.display = "none";
-      } else {
-        searchBoxGroup.style.display = "none";
-        directBoxGroup.style.display = "block";
-      }
-    });
+  // 지문 저장고 사전 데이터 (미래엔 교과서 + PDF 모의고사 지문들)
+  const passagesDb = {
+    miraen_art: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork.
+
+The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery in the U.S. in 1853 and spent his early life working on a cotton farm in Alabama. Although he became a free man after the American Civil War, he still had to face racial discrimination, working for very low wages on the farm. Later, when he was around 70 years old, Traylor moved to the city of Montgomery, Alabama, where he found a job in a factory. It wasn’t until he was 85 years old and became too ill to work that he turned to drawing to express his life experiences. Now, we’re going to look at some of his paintings, starting with Mean Dog and Man and Large Dog. Traylor had a strong fear of dogs because they had often been used on farms to watch and hunt slaves. His fear of dogs is expressed strongly in these pieces. In contrast, Woman with Purse and Man with Umbrella portrays the free lives of African Americans that he observed on the streets of Montgomery. Using simple shapes and colors, Traylor captured complex moments in American history from slavery to freedom. As a result, he’s now considered an important figure in American folk art.
+
+Next, we have Maud Lewis, a renowned artist known for her heart-warming paintings. Born in a small Canadian town in 1903, Lewis suffered from physical weaknesses such as distorted shoulders and fingers. This limited her mobility and caused her to drop out of school. To make a living, she began to paint and sell Christmas cards. When her parents passed away, Lewis went to live with her aunt in Digby, Nova Scotia, where she met her future husband, Everett Lewis. After marrying, the couple spent the rest of their lives there, and Lewis continued to paint. She often depicted the Digby landscapes in paintings such as Edge of Digby Harbor. Her artwork used a mixture of bright and vivid oil paints and simple forms, generating an original, innovative style. Although her physical limitations confined her to a small cottage, her talent and imagination were both limitless. In Red Sleigh, red maple leaves appear on a special winter landscape, and Pair of Oxen shows decorated cows standing in a flower field. With these features, Lewis’ paintings create a magical quality, like that of a fairy tale. As her paintings gradually gained popularity, her story inspired many people and was later made into books and movies. Maud Lewis expressed her love for the world through her paintings and became an iconic figure in Canadian folk art.
+
+Now let’s take a look at the final artist of this exhibition: Anna Ancher, a famous painter from Denmark. When observing her paintings, you may notice a common theme — they all feature female figures. Born in Skagen, Denmark, in 1859, she later moved to Copenhagen to attend a private painting school. After that, she even studied abroad in Paris, which was unusual for women at the time. Thanks to her mother’s encouragement, she was able to take advantage of these opportunities. Even after getting married, Ancher persisted in painting, objecting to the social pressure that married women were to solely focus on household duties. Ancher differed from other artists of that era, who depicted women as still life subjects. In contrast, she showcased them as active participants in everyday tasks, as seen in her works The Maid in the Kitchen and Sewing Fisherman’s Wife. She also skillfully explored light and color, contributing to the rich Impressionist movement in Denmark. In her painting the sunlight on the blue wall is stunningly portrayed. Her paintings continue to amaze us to this day. Thank you for joining this guided tour, and I hope my explanations have aided you in appreciating these paintings. Please take some time to further explore the exhibition.`,
+    
+    mock_29: `Big mammalian herbivore species react to danger from predators or humans in different ways. Some species are nervous, fast, and programmed for instant flight when they perceive a threat. Other species are slower, less nervous, seek protection in herds, stand their ground when threatened, and don't run until necessary. Naturally, the nervous species are difficult to keep in captivity. If put into an enclosure, they are likely to panic and either die of shock or hit themselves repeatedly to death against the fence in their attempts to escape. That's true, for example, of gazelles, which for thousands of years were the most frequently hunted game species in some parts of the Fertile Crescent. There is no mammal species that the first settled peoples of that area had more opportunity to domesticate than gazelles. But no gazelle species has ever been domesticated. Just imagine trying to herd an animal that runs away, blindly hits itself against walls, can leap up to nearly 30 feet, and can run at a speed of 50 miles per hour!`,
+
+    mock_30: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have. Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so. If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing, for they know that they may be the travelers in need of food and shelter another day. Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`,
+
+    mock_31: `Whether we feel happy or sad, content or discontent, is not determined merely by each individual successive moment of life experience—a good thing happens and I'm happy, a bad thing happens and I'm sad. While our experiences affect our well-being, we are not blown in a completely new direction by each gust of wind. As humans, we adjust to new information and events—both good and bad—and return to our personal default level of well-being. There will be highs and lows, but over time, like water seeking its own level, we are pulled toward our baseline—back up after bad news and back down after good. The euphoria of first love fades, and so does the despair of a break-up. This tendency is best seen with little kids and their toys: When they get what they've longed for, they believe they will be happy for the rest of their lives. And for the first few minutes of the rest of their lives, they are. But then the kids—like adults—adapt.`,
+
+    mock_32: `Although you may put off going to sleep in order to squeeze more activities into your day, eventually your need for sleep becomes overwhelming and you are forced to get some sleep. This daily drive for sleep appears to be due, in part, to a compound known as adenosine. This natural chemical builds up in your blood as time awake increases. While you sleep, your body breaks down the adenosine. Thus, this molecule may be what your body uses to keep track of and to trigger sleep when needed. An accumulation of adenosine and other factors might explain why, after several nights of less than optimal amounts of sleep, you build up a sleep debt that you must make up by sleeping longer than normal. Because of such built-in molecular feedback, you can't become accustomed to getting less sleep than your body needs. Eventually, a lack of sleep catches up with you.`,
+
+    mock_36: `The desert tortoise has a simple solution for coping with Death Valley's extreme heat: It avoids it. The slow-moving creature hibernates during the winter and stays in its tunnel for much of the summer, meaning that it spends more than 90 percent of its life underground. In fact, the tortoise usually only surfaces after a good rain. Then, it gets to work. The tortoise stocks up on water by eating plants and digging holes to collect rain. But to stay supplied with water through its extended hibernation, the reptile relies on something else: its highly sophisticated bladder. Unlike most animals, the tortoise's bladder acts as a holding tank, allowing it to reabsorb water back into its body. Incredibly, a desert tortoise can go a full year without taking in any freshwater at all. And because its bladder is so important to a tortoise's survival, park rangers often remind visitors not to stop and help the slow-movers across the road. Tortoises become so terrified when people pick them up that they empty their bladders, losing their precious water reserves.`,
+
+    mock_38: `All editing systems are now nonlinear computer-based systems that allow random access to any video shot or scene without having to fast forward or fast reverse to find it. Nonlinear systems can create a range of special effects, such as slow motion, wipes and dissolves. Another highlight of a digital nonlinear system is its random access process that makes it easy for an editor to find desired shots or scenes without having to spend time fast forwarding or rewinding videotape. With nonlinear editing, shots or scenes can be easily added or removed anywhere in the program, and the computer adjusts the program length automatically. Linear editing was like composing a paper on a typewriter. If a mistake was made or new information needed to be added, the whole piece had to be retyped. Nonlinear editing, on the other hand, is like using a word processing program. If a mistake is made, it is easily deleted and fixed with a few keystrokes, and new information can be added easily.`,
+
+    mock_39: `A person who always tries to prevent harm, but never does, is not generally thought of as morally good. A morally good person is one who does morally bad actions significantly less often than most and does morally good ones significantly more often than most. In judging a person, not only her actions but also her intentions and motives are relevant. A morally good person must intend to do morally good actions and intend to avoid morally bad ones. A person who unintentionally prevents harm to others and does not harm them because things do not turn out as she intends is not morally good. Although this kind of situation generally occurs only in slapstick movies, it is worth mentioning to avoid the false impression that it is the actual consequences of a person's actions that count toward her being judged morally good or bad. But actual consequences are important. Of such a person, it may be said that she means well; but, contrary to Kant, some results are necessary before she is regarded as morally good.`
+  };
+
+  // 드롭다운에서 지문 선택 시 textarea에 원문 자동 세팅
+  presetPassageSelect.addEventListener("change", (e) => {
+    const selectedKey = e.target.value;
+    if (passagesDb[selectedKey]) {
+      passageInput.value = passagesDb[selectedKey];
+    } else {
+      passageInput.value = "";
+    }
   });
 
   let currentApiKey = localStorage.getItem("gemini_api_key") || "";
@@ -66,38 +84,19 @@ document.addEventListener("DOMContentLoaded", () => {
   let score = 0;
 
   generateBtn.addEventListener("click", async () => {
-    const currentMode = document.querySelector('input[name="inputMode"]:checked').value;
-    let promptInputText = "";
-
-    if (currentMode === "search") {
-      const keyword = targetKeywordInput.value.trim();
-      if (!keyword) {
-        alert("시험 범위(예: 미래엔 공통영어2 2과 / 고1 6월 모의고사 32번)를 입력해 주세요.");
-        return;
-      }
-      
-      promptInputText = `[지정한 시험 범위 키워드]: ${keyword}
-      * 지시사항: 
-        1. 위 키워드가 '미래엔 공통영어2(김성연)' 교과서 관련이면 해당 단원(Lesson 1~4: Dark patterns, AI Neural Implants 등)의 실제 영어 본문 텍스트 및 주제를 상기하여 문제를 생성해줘.
-        2. 위 키워드가 모의고사(예: 6월/9월 모의고사 번호) 관련이면 해당 기출 지문 원문을 상기하여 생성해줘.`;
-      
-      currentPassage = `[시험 범위: ${keyword}] 지문을 바탕으로 출제된 내신 대비 10문제입니다.`;
-    } else {
-      const passage = passageInput.value.trim();
-      if (!passage) {
-        alert("지문 원문을 입력해 주세요.");
-        return;
-      }
-      promptInputText = `[입력된 영어 지문]: ${passage}`;
-      currentPassage = passage;
+    const passage = passageInput.value.trim();
+    if (!passage) {
+      alert("지문을 선택하거나 직접 입력해 주세요.");
+      return;
     }
+    currentPassage = passage;
 
     stepInput.style.display = "none";
     stepApi.style.display = "none";
     stepLoading.style.display = "block";
 
     try {
-      quizData = await fetchQuizFromGemini(promptInputText, quizTypeSelect.value, currentApiKey);
+      quizData = await fetchQuizFromGemini(passage, quizTypeSelect.value, currentApiKey);
     } catch (err) {
       console.warn("AI 호출 실패/키 미입력: 오프라인 10문제 풀을 사용합니다.", err);
       quizData = getFallbackQuizPool();
@@ -111,13 +110,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderQuestion();
   });
 
-  async function fetchQuizFromGemini(inputText, type, apiKey) {
+  async function fetchQuizFromGemini(passage, type, apiKey) {
     if (!apiKey) throw new Error("No API key");
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
-    const prompt = `다음 지정된 고등학교 영어 시험 범위 또는 지문을 바탕으로 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
+    const prompt = `다음 영어 지문을 바탕으로 고등학교 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
     유형 선택: ${type}
-    ${inputText}
+    지문 내용: ${passage}
     
     [출제 가이드라인]
     1. 구성: 
@@ -170,37 +169,37 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         type: "objective",
         question: "다음 글의 핵심 내용과 일치하지 않는 것은?",
-        options: ["① 지문은 환경 보호를 강조한다.", "② 샴푸 사용이 생태계에 영향을 줄 수 있다.", "③ 자연 파괴는 인간과 무관하다.", "④ 친환경 제품 사용이 권장된다."],
+        options: ["① 지문은 아티스트들의 도전을 다룬다.", "② 포기하지 않는 태도가 강조된다.", "③ 예술가들의 삶은 도전과 무관하다.", "④ 독창적인 스타일이 언급된다."],
         answer: 2,
-        explanation: "지문에서는 자연 파괴와 인간의 활동이 밀접함을 밝히고 있습니다."
+        explanation: "지문에서는 예술가들이 겪은 다양한 도전과 어려움을 다루고 있습니다."
       },
       {
         type: "objective",
         question: "다음 지문의 빈칸 (        )에 들어갈 가장 알맞은 어휘는?",
-        options: ["① significant", "② trivial", "③ accidental", "④ harmful"],
+        options: ["① unique", "② ordinary", "③ identical", "④ boring"],
         answer: 0,
-        explanation: "지문의 맥락상 '중대한'이라는 의미의 significant가 알맞습니다."
+        explanation: "맥락상 독창적인 스타일을 의미하는 unique가 알맞습니다."
       },
       {
         type: "subjective",
-        question: "[서술형] 지문의 내용을 바탕으로 '친환경 샴푸가 생태계에 미치는 영향'에 대해 15자 이내로 서술하시오.",
+        question: "[서술형] 지문의 내용을 바탕으로 예술가들이 공통적으로 보여준 태도에 대해 15자 이내로 서술하시오.",
         options: [],
-        answerText: "야생 생물 서식지 파괴를 줄이고 생태계를 보호함",
-        explanation: "지문의 주제를 올바르게 정리해야 합니다."
+        answerText: "어려움 속에서도 예술을 포기하지 않음",
+        explanation: "시련을 극복하고 예술 활동을 지속한 점이 핵심입니다."
       },
       {
         type: "objective",
         question: "밑줄 친 부분 중 어법상 틀린 것을 고르시오.",
-        options: ["① Environmental shampoo can", "② significantly impact", "③ wildlife habitats, which", "④ causing serious damage"],
-        answer: 3,
-        explanation: "which절의 본동사가 필요하므로 causing은 causes로 수정되어야 합니다."
+        options: ["① Artists who never", "② gave up on their art,", "③ despite they faced", "④ many challenges"],
+        answer: 2,
+        explanation: "despite 뒤에는 절이 아니라 명사구가 와야 하므로 in spite of 혹은 despite challenges로 써야 합니다."
       },
       {
         type: "subjective",
-        question: "[서술형 영작] (impact / wildlife / habitat) 단어를 모두 사용하여 조건에 맞게 영어로 작성하시오.",
+        question: "[서술형 영작] (never / give up) 단어를 사용하여 '그들은 결코 예술을 포기하지 않았다'를 영어로 영작하시오.",
         options: [],
-        answerText: "It can significantly impact wildlife habitats.",
-        explanation: "조동사 뒤 동사원형 및 부사 배치가 포인트입니다."
+        answerText: "They never gave up on their art.",
+        explanation: "과거시제 부정문 어순에 유의합니다."
       }
     ];
   }
@@ -293,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stepResult.style.display = "none";
     stepInput.style.display = "block";
     stepApi.style.display = "block";
-    targetKeywordInput.value = "";
+    presetPassageSelect.value = "";
     passageInput.value = "";
   });
 });
