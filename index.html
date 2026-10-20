@@ -38,12 +38,71 @@
       <h2>1단계: 시험 범위 지정 (지문 저장고)</h2>
       <p class="desc">등록된 교과서 본문이나 모의고사 지문을 선택하거나 직접 입력하세요.</p>
       
-      <!-- 저장된 지문 선택 드롭다운 (29~34, 36~39번 전체 원본 완벽 탑재) -->
+      <!-- 저장된 지문 선택 드롭다운 -->
       <div class="option-group">
         <label>📖 저장된 지문 바로 선택하기:</label>
         <select id="presetPassageSelect">
-          <option value="">-- 2025년 9월 고1 모의고사 지문 전체 선택 --</option>
+          <option value="">-- 지문 또는 모의고사 선택하기 --</option>
           <option value="miraen_art">미래엔 공통영어2: From Shadows to Spotlights</option>
           <option value="mock_29">29번: 초식동물과 사육 (Herbivore species)</option>
           <option value="mock_30">30번: 공유와 생존 (Sharing and resources)</option>
-          <option value="mock_31
+          <option value="mock_31">31번: 행복 기준선과 적응 (Happiness baseline)</option>
+          <option value="mock_32">32번: 수면 부족과 아데노신 (Adenosine & sleep debt)</option>
+          <option value="mock_33">33번: 불확실성의 유효 숫자 (Significance of uncertainty)</option>
+          <option value="mock_34">34번: 재생에너지 인프라와 화석연료 (Renewable energy)</option>
+          <option value="mock_36">36번: 사막 거북과 방광 (Desert tortoise & bladder)</option>
+          <option value="mock_37">37번: 마찰력과 자전거 페달 (Friction & bicycle)</option>
+          <option value="mock_38">38번: 비선형 편집 시스템 (Nonlinear editing)</option>
+          <option value="mock_39">39번: 도덕적 책임과 의도 (Moral responsibility)</option>
+        </select>
+      </div>
+
+      <div class="input-field-group" style="margin-top: 12px;">
+        <label>선택되거나 직접 입력된 지문 원문:</label>
+        <textarea id="passageInput" placeholder="위에서 지문을 선택하면 원문이 여기에 자동으로 채워집니다..."></textarea>
+      </div>
+      
+      <div class="option-group">
+        <label>문제 출제 유형:</label>
+        <select id="quizTypeSelect">
+          <option value="mixed">전체 혼합 (내용이해 + 어법/어휘 + 서술형 영작)</option>
+          <option value="comprehension">내용 이해 & Q&A 질문 전용</option>
+          <option value="subjective">서술형 / 조건부 영작 전용</option>
+        </select>
+      </div>
+
+      <button id="generateBtn" class="btn primary">🚀 10문제 생성하기</button>
+    </section>
+
+    <!-- 로딩 화면 -->
+    <section class="card loading-card" id="step-loading" style="display: none;">
+      <div class="spinner"></div>
+      <p id="loadingText">AI가 지문 내용과 서술형 출제 포인트를 분석하여 10문제를 생성 중입니다...</p>
+    </section>
+
+    <!-- 2단계: 퀴즈 풀이 영역 -->
+    <section class="card" id="step-quiz" style="display: none;">
+      <div class="quiz-header">
+        <span id="quizProgress">문제 1 / 10</span>
+        <span id="scoreBadge">점수: 0점</span>
+      </div>
+      
+      <div id="questionContainer" class="question-box"></div>
+
+      <div class="quiz-footer">
+        <button id="nextBtn" class="btn primary">다음 문제</button>
+      </div>
+    </section>
+
+    <!-- 3단계: 결과 및 피드백 영역 -->
+    <section class="card" id="step-result" style="display: none;">
+      <h2>🎉 학습 완료!</h2>
+      <div id="scoreSummary" class="score-summary"></div>
+      <div id="feedbackContainer" class="feedback-box"></div>
+      <button id="restartBtn" class="btn primary">처음으로 돌아가기</button>
+    </section>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

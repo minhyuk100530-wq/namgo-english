@@ -23,8 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 2025년 9월 고1 모의고사 29~34, 36~38번 완제 원본 DB (분할 없음)
+  // 2025년 9월 고1 모의고사 29~34, 36~39번 전용 (내용 누락 없이 완벽하게 복원된 원본 전체 데이터베이스)
   const passagesDb = {
+    miraen_art: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork. The first artist we’re going to examine is Bill Traylor, born into slavery in 1853, who turned to drawing at age 85 to express his life experiences, capturing complex moments in American history from slavery to freedom. Next is Maud Lewis, a renowned Canadian artist who suffered from physical weaknesses and painted heart-warming Digby landscapes. Finally, Anna Ancher, a famous painter from Denmark, persisted in painting and focused on female figures, defying traditional social pressures on married women.`,
+    
     mock_29: `Big mammalian herbivore species react to danger from predators or humans in different ways. Some species are nervous, fast, and programmed for instant flight when they perceive a threat. Other species are slower, less nervous, seek protection in herds, stand their ground when threatened, and don't run until necessary. Naturally, the nervous species are difficult to keep in captivity. If put into an enclosure, they are likely to panic and either die of shock or hit themselves repeatedly to death against the fence in their attempts to escape. That's true, for example, of gazelles, which for thousands of years were the most frequently hunted game species in some parts of the Fertile Crescent. There is no mammal species that the first settled peoples of that area had more opportunity to domesticate than gazelles. But no gazelle species has ever been domesticated. Just imagine trying to herd an animal that runs away, blindly hits itself against walls, can leap up to nearly 30 feet, and can run at a speed of 50 miles per hour!`,
 
     mock_30: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have. Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so. If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing, for they know that they may be the travelers in need of food and shelter another day. Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`,
@@ -41,24 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mock_37: `Imagine you are pedalling your bicycle on a level road. You stop pedalling: no force is now acting to move you forward. What happens? You gradually slow down. How could you slow down more suddenly, in a shorter distance? By putting the brakes on. Because the brakes change your movement, making you slow down more suddenly, they must be exerting a force on the bicycle and you, as they grip and rub on the wheel-rims. This is the force called friction, which tends to slow down moving things by acting in the direction opposite to movement, that is backwards. Even without the brakes on, there are other friction forces acting on you and your bicycle, which also slow you down. One of these is friction in the wheels rubbing on the axles. Another is air resistance, which you can feel, pushing you backwards as you and the bicycle move forwards.`,
 
-    mock_38: `All editing systems are now nonlinear computer-based systems that allow random access to any video shot or scene without having to fast forward or fast reverse to find it. Nonlinear systems can create a range of special effects, such as slow motion, wipes and dissolves. Another highlight of a digital nonlinear system is its random access process that makes it easy for an editor to find desired shots or scenes without having to spend time fast forwarding or rewinding videotape. With nonlinear editing, shots or scenes can be easily added or removed anywhere in the program, and the computer adjusts the program length automatically. Linear editing was like composing a paper on a typewriter. If a mistake was made or new information needed to be added, the whole piece had to be retyped. Nonlinear editing, on the other hand, is like using a word processing program. If a mistake is made, it is easily deleted and fixed with a few keystrokes, and new information can be added easily.`
-  };
+    mock_38: `All editing systems are now nonlinear computer-based systems that allow random access to any video shot or scene without having to fast forward or fast reverse to find it. Nonlinear systems can create a range of special effects, such as slow motion, wipes and dissolves. Another highlight of a digital nonlinear system is its random access process that makes it easy for an editor to find desired shots or scenes without having to spend time fast forwarding or rewinding videotape. With nonlinear editing, shots or scenes can be easily added or removed anywhere in the program, and the computer adjusts the program length automatically. Linear editing was like composing a paper on a typewriter. If a mistake was made or new information needed to be added, the whole piece had to be retyped. Nonlinear editing, on the other hand, is like using a word processing program. If a mistake is made, it is easily deleted and fixed with a few keystrokes, and new information can be added easily.`,
 
-  // 파트 분할을 완전히 없애고 문항 단위로만 드롭다운 구성
-  if (presetPassageSelect) {
-    presetPassageSelect.innerHTML = `
-      <option value="">-- 2025년 9월 고1 모의고사 지문 전체 선택 --</option>
-      <option value="mock_29">29번 (초식동물과 사육)</option>
-      <option value="mock_30">30번 (공유와 생존)</option>
-      <option value="mock_31">31번 (행복 기준선과 적응)</option>
-      <option value="mock_32">32번 (수면 부족과 아데노신)</option>
-      <option value="mock_33">33번 (불확실성의 유효 숫자)</option>
-      <option value="mock_34">34번 (재생에너지 인프라와 화석연료)</option>
-      <option value="mock_36">36번 (사막 거북과 방광)</option>
-      <option value="mock_37">37번 (마찰력과 자전거 페달)</option>
-      <option value="mock_38">38번 (비선형 편집 시스템)</option>
-    `;
-  }
+    mock_39: `A morally good person is one who does morally bad actions significantly less often than most and does morally good ones significantly more often than most. In judging a person not only her actions but also her intentions and motives are relevant. A morally good person must intend to do morally good actions and intend to avoid morally bad ones. A person who unintentionally prevents harm to others and does not harm them simply because things do not turn out as she intends is not morally good. Although this kind of situation generally occurs only in slapstick movies, it is worth mentioning to avoid the false impression that it is the actual consequences of a person's actions that count toward her being judged morally good or bad. But actual consequences are important. Of such a person, it may be said that she means well but, contrary to Kant, some results are necessary before she is regarded as morally good.`
+  };
 
   presetPassageSelect.addEventListener("change", (e) => {
     const selectedKey = e.target.value;
@@ -161,9 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         "type": "subjective",
-        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 우리가 가질수록 우리는 나누고 싶지 않다)",
+        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오.",
         "options": [],
-        "answerText": "The more we have, the less we want to share.",
+        "answerText": "Sample answer sentence",
         "explanation": "조건에 맞춘 모범 영작문입니다."
       }
     ]`;
@@ -185,8 +173,8 @@ document.addEventListener("DOMContentLoaded", () => {
     scoreBadge.textContent = `점수: ${score}점`;
 
     let html = `
-      <div class="passage-box" style="max-height: 160px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 12px; padding: 12px; line-height: 1.5;">
-        <strong>📖 모의고사 지문 원본:</strong><br>${currentPassage}
+      <div class="passage-box" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 12px; padding: 12px; line-height: 1.5;">
+        <strong>📖 모의고사 지문 원본 (전체 내용):</strong><br>${currentPassage}
       </div>
       <p style="margin-bottom: 12px; font-weight: bold; line-height: 1.5; font-size: 0.92rem;">Q${currentIndex + 1}. ${q.question}</p>
     `;
