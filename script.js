@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 지문 저장고 사전 데이터 (미래엔 교과서 + PDF 모의고사 지문들)
+  // 지문 저장고 사전 데이터
   const passagesDb = {
     miraen_art: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork.
 
@@ -48,7 +48,6 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
     mock_39: `A person who always tries to prevent harm, but never does, is not generally thought of as morally good. A morally good person is one who does morally bad actions significantly less often than most and does morally good ones significantly more often than most. In judging a person, not only her actions but also her intentions and motives are relevant. A morally good person must intend to do morally good actions and intend to avoid morally bad ones. A person who unintentionally prevents harm to others and does not harm them because things do not turn out as she intends is not morally good. Although this kind of situation generally occurs only in slapstick movies, it is worth mentioning to avoid the false impression that it is the actual consequences of a person's actions that count toward her being judged morally good or bad. But actual consequences are important. Of such a person, it may be said that she means well; but, contrary to Kant, some results are necessary before she is regarded as morally good.`
   };
 
-  // 드롭다운에서 지문 선택 시 textarea에 원문 자동 세팅
   presetPassageSelect.addEventListener("change", (e) => {
     const selectedKey = e.target.value;
     if (passagesDb[selectedKey]) {
@@ -85,6 +84,13 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
 
   generateBtn.addEventListener("click", async () => {
     const passage = passageInput.value.trim();
+    const apiKey = currentApiKey || localStorage.getItem("gemini_api_key");
+
+    if (!apiKey) {
+      alert("⚠️ 0단계에서 Gemini API 키를 먼저 입력하고 [저장]을 눌러주세요!");
+      return;
+    }
+
     if (!passage) {
       alert("지문을 선택하거나 직접 입력해 주세요.");
       return;
@@ -96,10 +102,14 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
     stepLoading.style.display = "block";
 
     try {
-      quizData = await fetchQuizFromGemini(passage, quizTypeSelect.value, currentApiKey);
+      quizData = await fetchQuizFromGemini(passage, quizTypeSelect.value, apiKey);
     } catch (err) {
-      console.warn("AI 호출 실패/키 미입력: 오프라인 10문제 풀을 사용합니다.", err);
-      quizData = getFallbackQuizPool();
+      console.error("AI 문제 생성 에러 상세:", err);
+      alert("❌ AI 문제 생성 실패:\n" + err.message);
+      stepLoading.style.display = "none";
+      stepInput.style.display = "block";
+      stepApi.style.display = "block";
+      return;
     }
 
     stepLoading.style.display = "none";
@@ -111,10 +121,9 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
   });
 
   async function fetchQuizFromGemini(passage, type, apiKey) {
-    if (!apiKey) throw new Error("No API key");
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
-    const prompt = `다음 영어 지문을 바탕으로 고등학교 내신 대비 객관식 및 서술형 문제 총 10개를 JSON 배열로 생성해줘.
+    const prompt = `다음 영어 지문을 바탕으로 고등학교 내신 대비 객관식 및 서술형 문제 총 10개를 순수 JSON 배열로만 생성해줘. (마크다운 백틱 등 금지, 오직 [ 로 시작해서 ] 로 끝나는 JSON 문자열만 출력할 것)
     유형 선택: ${type}
     지문 내용: ${passage}
     
@@ -129,7 +138,7 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
        - 객관식의 경우 "options" 배열(4개)과 "answer"(0~3 숫자 인덱스) 포함
        - 서술형의 경우 "options"는 [], "answerText"에 모범 답안 작성
 
-    응답 JSON 구조 예시 (백틱 없이 pure JSON):
+    반드시 아래 형식의 JSON 배열만 반환하세요:
     [
       {
         "type": "objective",
@@ -137,71 +146,19 @@ Now let’s take a look at the final artist of this exhibition: Anna Ancher, a f
         "options": ["① option1", "② option2", "③ option3", "④ option4"],
         "answer": 0,
         "explanation": "해설 내용"
-      },
-      {
-        "type": "objective",
-        "question": "다음 지문의 빈칸 (        )에 들어갈 가장 적절한 단어는?",
-        "options": ["① significant", "② trivial", "③ accidental", "④ harmful"],
-        "answer": 0,
-        "explanation": "맥락상 significant가 들어갑니다."
-      },
-      {
-        "type": "subjective",
-        "question": "[서술형] 주어진 보기 단어(impact / environment)를 활용해 빈칸 조건에 맞는 문장으로 완결하시오.",
-        "options": [],
-        "answerText": "It can significantly impact the environment.",
-        "explanation": "조건에 맞춘 모범 영작문입니다."
       }
     ]`;
 
+    // 최신 올바른 모델 이름 (gemini-3.8-flash) 적용 완료
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       contents: prompt,
     });
 
     let text = response.text.trim();
     text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    
     return JSON.parse(text);
-  }
-
-  function getFallbackQuizPool() {
-    return [
-      {
-        type: "objective",
-        question: "다음 글의 핵심 내용과 일치하지 않는 것은?",
-        options: ["① 지문은 아티스트들의 도전을 다룬다.", "② 포기하지 않는 태도가 강조된다.", "③ 예술가들의 삶은 도전과 무관하다.", "④ 독창적인 스타일이 언급된다."],
-        answer: 2,
-        explanation: "지문에서는 예술가들이 겪은 다양한 도전과 어려움을 다루고 있습니다."
-      },
-      {
-        type: "objective",
-        question: "다음 지문의 빈칸 (        )에 들어갈 가장 알맞은 어휘는?",
-        options: ["① unique", "② ordinary", "③ identical", "④ boring"],
-        answer: 0,
-        explanation: "맥락상 독창적인 스타일을 의미하는 unique가 알맞습니다."
-      },
-      {
-        type: "subjective",
-        question: "[서술형] 지문의 내용을 바탕으로 예술가들이 공통적으로 보여준 태도에 대해 15자 이내로 서술하시오.",
-        options: [],
-        answerText: "어려움 속에서도 예술을 포기하지 않음",
-        explanation: "시련을 극복하고 예술 활동을 지속한 점이 핵심입니다."
-      },
-      {
-        type: "objective",
-        question: "밑줄 친 부분 중 어법상 틀린 것을 고르시오.",
-        options: ["① Artists who never", "② gave up on their art,", "③ despite they faced", "④ many challenges"],
-        answer: 2,
-        explanation: "despite 뒤에는 절이 아니라 명사구가 와야 하므로 in spite of 혹은 despite challenges로 써야 합니다."
-      },
-      {
-        type: "subjective",
-        question: "[서술형 영작] (never / give up) 단어를 사용하여 '그들은 결코 예술을 포기하지 않았다'를 영어로 영작하시오.",
-        options: [],
-        answerText: "They never gave up on their art.",
-        explanation: "과거시제 부정문 어순에 유의합니다."
-      }
-    ];
   }
 
   function renderQuestion() {
