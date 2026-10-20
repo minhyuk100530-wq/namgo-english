@@ -23,17 +23,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 지문 데이터 저장고 (학습 지문 요약 및 원문 관리)
+  // 지문 3등분(Part 1, Part 2, Part 3) 저장고 데이터베이스
   const passagesDb = {
-    miraen_art: `Welcome to the Dream Art Gallery! This exhibition explores unique artists who overcame life challenges to express their stories through art, featuring remarkable creators from diverse backgrounds and historical contexts.`,
-    mock_29: `Big mammalian herbivore species react to danger from predators or humans in different ways, influencing their captivity and domestication potential.`,
-    mock_30: `Our natural tendency to share and cooperate is shaped by resource availability, survival dependencies, and social structures within communities.`,
-    mock_31: `Human well-being naturally adapts to life events and experiences, eventually returning to a personal baseline or default level over time.`,
-    mock_32: `The daily biological drive for sleep is regulated by chemical compounds such as adenosine, building up during wakefulness and clearing during rest.`,
-    mock_36: `Desert organisms utilize specialized physiological adaptations, such as sophisticated fluid retention systems, to survive extreme environmental heat.`,
-    mock_38: `Nonlinear digital editing systems revolutionize media production through random access capabilities compared to traditional linear methods.`,
-    mock_39: `Moral responsibility in human actions involves evaluating both actual consequences, intentions, and underlying motives.`
+    // 미래엔 교과서 미술 전시회 지문 3등분
+    miraen_art_1: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork. The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery in the U.S. in 1853 and spent his early life working on a cotton farm in Alabama. Although he became a free man after the American Civil War, he still had to face racial discrimination, working for very low wages on the farm. Later, when he was around 70 years old, Traylor moved to the city of Montgomery, Alabama, where he found a job in a factory. It wasn’t until he was 85 years old and became too ill to work that he turned to drawing to express his life experiences.`,
+    
+    miraen_art_2: `Now, we’re going to look at some of his paintings, starting with Mean Dog and Man and Large Dog. Traylor had a strong fear of dogs because they had often been used on farms to watch and hunt slaves. His fear of dogs is expressed strongly in these pieces. In contrast, Woman with Purse and Man with Umbrella portrays the free lives of African Americans that he observed on the streets of Montgomery. Using simple shapes and colors, Traylor captured complex moments in American history from slavery to freedom. As a result, he’s now considered an important figure in American folk art. Next, we have Maud Lewis, a renowned artist known for her heart-warming paintings. Born in a small Canadian town in 1903, Lewis suffered from physical weaknesses such as distorted shoulders and fingers. This limited her mobility and caused her to drop out of school. To make a living, she began to paint and sell Christmas cards.`,
+
+    miraen_art_3: `When her parents passed away, Lewis went to live with her aunt in Digby, Nova Scotia, where she met her future husband, Everett Lewis. After marrying, the couple spent the rest of their lives there, and Lewis continued to paint. She often depicted the Digby landscapes in paintings such as Edge of Digby Harbor. Now let’s take a look at the final artist of this exhibition: Anna Ancher, a famous painter from Denmark. When observing her paintings, you may notice a common theme — they all feature female figures. Born in Skagen, Denmark, in 1859, she later moved to Copenhagen to attend a private painting school. After getting married, Ancher persisted in painting, objecting to the social pressure that married women were to solely focus on household duties.`,
+
+    // 모의고사 29번 3등분
+    mock_29_1: `Big mammalian herbivore species react to danger from predators or humans in different ways. Some species are nervous, fast, and programmed for instant flight when they perceive a threat. Other species are slower, less nervous, seek protection in herds, stand their ground when threatened, and don't run until necessary.`,
+    mock_29_2: `Naturally, the nervous species are difficult to keep in captivity. If put into an enclosure, they are likely to panic and either die of shock or hit themselves repeatedly to death against the fence in their attempts to escape. That's true, for example, of gazelles, which for thousands of years were the most frequently hunted game species in some parts of the Fertile Crescent.`,
+    mock_29_3: `There is no mammal species that the first settled peoples of that area had more opportunity to domesticate than gazelles. But no gazelle species has ever been domesticated. Just imagine trying to herd an animal that runs away, blindly hits itself against walls, can leap up to nearly 30 feet, and can run at a speed of 50 miles per hour!`,
+
+    // 모의고사 30번 3등분
+    mock_30_1: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have.`,
+    mock_30_2: `Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so. If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing.`,
+    mock_30_3: `Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`
   };
+
+  // 드롭다운 HTML 구조를 3등분 선택지로 교체하기 위해 동적으로 옵션 업데이트 기능 반영
+  // (index.html의 select 요소를 여기서 동적으로 확장하거나 아래와 같이 처리합니다)
+  if (presetPassageSelect && !document.getElementById("opt_miraen_1")) {
+    presetPassageSelect.innerHTML = `
+      <option value="">-- 학습할 지문 및 파트 선택하기 --</option>
+      <optgroup label="미래엔 교과서 (Art Gallery 전시회)">
+        <option value="miraen_art_1">미래엔 교과서 파트 1 (Bill Traylor 생애)</option>
+        <option value="miraen_art_2">미래엔 교과서 파트 2 (Traylor 그림 & Maud Lewis)</option>
+        <option value="miraen_art_3">미래엔 교과서 파트 3 (Anna Ancher와 여성 인물화)</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 29번 (초식동물과 사육)">
+        <option value="mock_29_1">모의고사 29번 파트 1</option>
+        <option value="mock_29_2">모의고사 29번 파트 2</option>
+        <option value="mock_29_3">모의고사 29번 파트 3</option>
+      </optgroup>
+      <optgroup label="고1 모의고사 30번 (공유와 생존)">
+        <option value="mock_30_1">모의고사 30번 파트 1</option>
+        <option value="mock_30_2">모의고사 30번 파트 2</option>
+        <option value="mock_30_3">모의고사 30번 파트 3</option>
+      </optgroup>
+    `;
+  }
 
   presetPassageSelect.addEventListener("change", (e) => {
     const selectedKey = e.target.value;
@@ -136,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         "type": "subjective",
-        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 빈칸 조건에 맞는 문장을 영어로 작성하시오. (뜻: 그녀는 어려움 속에서도 예술을 포기하지 않았다)",
+        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 그녀는 어려움 속에서도 예술을 포기하지 않았다)",
         "options": [],
         "answerText": "She never gave up on her art despite challenges.",
         "explanation": "조건에 맞춘 모범 영작문입니다."
@@ -160,8 +191,8 @@ document.addEventListener("DOMContentLoaded", () => {
     scoreBadge.textContent = `점수: ${score}점`;
 
     let html = `
-      <div class="passage-box" style="max-height: 110px; overflow-y: auto; font-size: 0.82rem; margin-bottom: 12px; padding: 10px;">
-        <strong>📖 지문 요약 및 참고:</strong><br>${currentPassage}
+      <div class="passage-box" style="max-height: 140px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 12px; padding: 12px; line-height: 1.5;">
+        <strong>📖 선택한 지문 파트 원문:</strong><br>${currentPassage}
       </div>
       <p style="margin-bottom: 12px; font-weight: bold; line-height: 1.5; font-size: 0.92rem;">Q${currentIndex + 1}. ${q.question}</p>
     `;
@@ -238,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackContainer.innerHTML = fbHtml;
   }
 
-  restartBtn.button = restartBtn.addEventListener("click", () => {
+  restartBtn.addEventListener("click", () => {
     stepResult.style.display = "none";
     stepInput.style.display = "block";
     stepApi.style.display = "block";
