@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackContainer = document.getElementById("feedbackContainer");
   const restartBtn = document.getElementById("restartBtn");
 
-  // 지문 3등분(Part 1, Part 2, Part 3) 저장고 데이터베이스
+  // 지문 3등분(Part 1, Part 2, Part 3) 데이터베이스 (모의고사 전체 원문 반영 완료)
   const passagesDb = {
     // 미래엔 교과서 미술 전시회 지문 3등분
     miraen_art_1: `Welcome to the Dream Art Gallery! I’m Isabel Williams, the docent for the From Shadows to Spotlights exhibit. Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives. Each artist has a unique painting style and story that has made their work highly valued. Let’s explore each artist’s life and artwork. The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery in the U.S. in 1853 and spent his early life working on a cotton farm in Alabama. Although he became a free man after the American Civil War, he still had to face racial discrimination, working for very low wages on the farm. Later, when he was around 70 years old, Traylor moved to the city of Montgomery, Alabama, where he found a job in a factory. It wasn’t until he was 85 years old and became too ill to work that he turned to drawing to express his life experiences.`,
@@ -37,14 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
     mock_29_2: `Naturally, the nervous species are difficult to keep in captivity. If put into an enclosure, they are likely to panic and either die of shock or hit themselves repeatedly to death against the fence in their attempts to escape. That's true, for example, of gazelles, which for thousands of years were the most frequently hunted game species in some parts of the Fertile Crescent.`,
     mock_29_3: `There is no mammal species that the first settled peoples of that area had more opportunity to domesticate than gazelles. But no gazelle species has ever been domesticated. Just imagine trying to herd an animal that runs away, blindly hits itself against walls, can leap up to nearly 30 feet, and can run at a speed of 50 miles per hour!`,
 
-    // 모의고사 30번 3등분
-    mock_30_1: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have.`,
-    mock_30_2: `Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so. If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing.`,
+    // 모의고사 30번 3등분 (뒷부분 누락 없이 전체 원문 완벽 수록)
+    mock_30_1: `For a species born in a time when resources were limited and dangers were great, our natural tendency to share and cooperate is complicated when resources are plenty and outside dangers are few. When we have less, we tend to be more open to sharing what we have. Certain nomadic tribes don't have much, yet they are happy to share because it is in their interest to do so.`,
+    mock_30_2: `If you happen upon them in your travels, they will open up their homes and give you their food and hospitality. It's not just because they are nice people; it's because their survival depends on sharing, for they know that they may be the travelers in need of food and shelter another day.`,
     mock_30_3: `Ironically, the more we have, the bigger our fences, the more sophisticated our security to keep people away and the less we want to share. Our desire for more, combined with our increased physical disconnection or blindness to reality, starts to create a disconnection from the "common folk."`
   };
 
-  // 드롭다운 HTML 구조를 3등분 선택지로 교체하기 위해 동적으로 옵션 업데이트 기능 반영
-  // (index.html의 select 요소를 여기서 동적으로 확장하거나 아래와 같이 처리합니다)
   if (presetPassageSelect && !document.getElementById("opt_miraen_1")) {
     presetPassageSelect.innerHTML = `
       <option value="">-- 학습할 지문 및 파트 선택하기 --</option>
@@ -61,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <optgroup label="고1 모의고사 30번 (공유와 생존)">
         <option value="mock_30_1">모의고사 30번 파트 1</option>
         <option value="mock_30_2">모의고사 30번 파트 2</option>
-        <option value="mock_30_3">모의고사 30번 파트 3</option>
+        <option value="mock_30_3">모의고사 30번 파트 3 (완결)</option>
       </optgroup>
     `;
   }
@@ -167,9 +165,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         "type": "subjective",
-        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 그녀는 어려움 속에서도 예술을 포기하지 않았다)",
+        "question": "[서술형 영작] 다음 한국어 뜻에 맞게 조건에 맞는 문장을 영어로 작성하시오. (뜻: 우리가 가질수록 우리는 나누고 싶지 않다)",
         "options": [],
-        "answerText": "She never gave up on her art despite challenges.",
+        "answerText": "The more we have, the less we want to share.",
         "explanation": "조건에 맞춘 모범 영작문입니다."
       }
     ]`;
