@@ -29,7 +29,6 @@
     .warehouse-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 15px; border-left: 5px solid var(--primary-color); }
     .warehouse-card h3 { font-size: 1rem; color: var(--primary-color); margin-bottom: 6px; }
     .korean-sentence { font-size: 1.05rem; font-weight: bold; color: #1e293b; margin-bottom: 10px; background: #e0e7ff; padding: 10px; border-radius: 6px; }
-    .grammar-tag { display: inline-block; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; border: 1px solid var(--border-color); }
     .explain-box { font-size: 0.9rem; color: #0f172a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 6px; margin-top: 10px; }
     .user-input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; font-size: 0.9rem; }
   </style>
@@ -44,7 +43,7 @@
       <h2>1단계: 학습할 암기장 선택</h2>
       <select id="partSelect">
         <option value="">-- 암기할 파트를 선택하세요 --</option>
-        <option value="subjective10">🔥 [서술형 암기] 핵심 문장 영작 TOP 10</option>
+        <option value="subjective_test">🔥 [테스트] 핵심 중요 문장 (3번 집중 공략)</option>
       </select>
       <button id="loadBtn" class="btn" style="margin-top: 10px;">📂 서술형 암기장 열기</button>
     </div>
@@ -71,60 +70,15 @@
       const cardContainer = document.getElementById("cardContainer");
       const backBtn = document.getElementById("backBtn");
 
-      // 🧠 직접 지정한 핵심 암기 문장 10개 (한국어 뜻 -> 영작 구조)
+      // 🧠 나만의 암기 문장 데이터베이스 (앞으로 여기에 문장을 계속 추가해 나가면 됩니다!)
       const warehouseData = {
-        subjective10: {
-          title: "🔥 [서술형 암기] 핵심 문장 영작 TOP 10",
+        subjective_test: {
+          title: "🔥 [테스트] 핵심 중요 문장 암기",
           items: [
             {
-              kor: "오늘 여러분은 삶의 시련에도 불구하고 예술을 포기하지 않은 세 명의 놀라운 예술가들을 만나게 될 것입니다.",
-              eng: "Today, you’re going to meet three amazing artists who never gave up on their art, despite challenges in their lives.",
-              grammar: "주격 관계대명사 (who) + 전치사 despite (in spite of)"
-            },
-            {
-              kor: "각 예술가는 자신들의 작품이 높은 평가를 받게 만든 독특한 화풍과 이야기를 가지고 있습니다.",
-              eng: "Each artist has a unique painting style and story that has made their work highly valued.",
-              grammar: "주격 관계대명사 (that) + 5형식 (make + 목적어 + 형용사)"
-            },
-            {
-              kor: "그가 85세가 되고 너무 아파서 일할 수 없게 된 것은 바로 그때가 되어서였다 (그림에 의존하게 된 것은).",
+              kor: "그가 85세가 되고 너무 아파서 일할 수 없게 된 것은 바로 그림을 그리며 자신의 인생 경험을 표현하게 되면서부터였다. (It ~ that 강조구문 & not ~ until & too ~ to)",
               eng: "It wasn’t until he was 85 years old and became too ill to work that he turned to drawing to express his life experiences.",
-              grammar: "It ~ that 강조구문 + not ~ until + too ~ to용법"
-            },
-            {
-              kor: "트레이러는 개들이 노예들을 감시하고 사냥하는 데 자주 이용되었기 때문에 개에 대한 강한 두려움을 가지고 있었다.",
-              eng: "Traylor had a strong fear of dogs because they had often been used on farms to watch and hunt slaves.",
-              grammar: "과거완료 수동태 (had often been used)"
-            },
-            {
-              kor: "비록 그녀의 신체적 한계가 그녀를 작은 오누이(오동작 방지 오두막)에 가두었지만, 그녀의 재능과 상상력은 모두 무한했다.",
-              eng: "Although her physical limitations confined her to a small cottage, her talent and imagination were both limitless.",
-              grammar: "양보의 접속사 Although (Despite 불가)"
-            },
-            {
-              kor: "그의(그녀의) 그림들이 점차 인기를 얻으면서, 그녀의 이야기는 많은 사람들에게 영감을 주었고 나중에 책과 영화로 만들어졌다.",
-              eng: "As her paintings gradually gained popularity, her story inspired many people and was later made into books and movies.",
-              grammar: "접속사 As (~함에 따라) + 수동태 (was made into)"
-            },
-            {
-              kor: "그 후 그녀는 파리에서 유학까지 했는데, 그것은 당시 여성들에게는 흔치 않은 일이었다.",
-              eng: "After that, she even studied abroad in Paris, which was unusual for women at the time.",
-              grammar: "계속적 용법의 관계대명사 (, which)"
-            },
-            {
-              kor: "결혼한 후에도 앙허는 그림 그리기를 고집했는데, 기혼 여성들은 가사 일에만 전념해야 한다는 사회적 압박에 반대했다.",
-              eng: "Even after getting married, Ancher persisted in painting, objecting to the social pressure that married women were to solely focus on household duties.",
-              grammar: "동명사 (getting, objecting) + 동격의 접속사 (that)"
-            },
-            {
-              kor: "대조적으로, 그녀는 작품 《부엌의 하녀》와 《바느질하는 어부의 아내》에서 볼 수 있듯이 그들을 일상 업무의 능동적인 참여자로 보여주었다.",
-              eng: "In contrast, she showcased them as active participants in everyday tasks, as seen in her works The Maid in the Kitchen and Sewing Fisherman’s Wife.",
-              grammar: "분사구문 수동태 생략형태 (as seen in)"
-            },
-            {
-              kor: "이 가이드 투어에 참여해주셔서 감사하며, 제 설명이 이 그림들을 감상하는 데 도움이 되었기를 바랍니다.",
-              eng: "Thank you for joining this guided tour, and I hope my explanations have aided you in appreciating these paintings.",
-              grammar: "현재완료 (have aided) + 전치사 in + 동명사 (appreciating)"
+              grammar: "① It ~ that 강조구문  ② not ~ until 구문  ③ too ~ to 용법 (서술형 만점 방지용 3대 문법 복합체)"
             }
           ]
         }
@@ -144,9 +98,9 @@
         data.items.forEach((item, idx) => {
           html += `
             <div class="warehouse-card">
-              <h3>서술형 문제 ${idx + 1}</h3>
+              <h3>서술형 집중 연습 문장 ${idx + 1}</h3>
               <div class="korean-sentence">🇰🇷 ${item.kor}</div>
-              <input type="text" class="user-input" placeholder="여기에 영어 문장을 직접 타이핑하며 연습해보세요...">
+              <input type="text" class="user-input" placeholder="여기에 영어 문장을 직접 타이핑하며 암기 연습을 해보세요...">
               <button class="btn secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="toggleAnswer(${idx})">정답 및 문법 포인트 확인 🔍</button>
               <div id="ans_${idx}" class="explain-box" style="display: none;">
                 <p style="margin-bottom: 6px;"><b>정답 영문장:</b> <span style="color: #4f46e5; font-weight: bold;">${item.eng}</span></p>
