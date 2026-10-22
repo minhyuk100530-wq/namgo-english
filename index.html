@@ -52,15 +52,25 @@
       <label style="font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 5px;">프리셋 지문 고르기 (드롭다운)</label>
       <select id="presetPassageSelect">
         <option value="">-- 지문을 선택하세요 --</option>
-        <option value="part1">[Welcome to the Dream Art Gallery! I’m
+        <option value="part1">[미래엔 파트 1]</option>
+        <option value="part2">[미래엔 파트 2]</option>
+        <option value="part3">[미래엔 파트 3]</option>
+        <option value="part4">[미래엔 파트 4]</option>
+      </select>
+
+      <label style="font-size: 0.9rem; font-weight: bold; display: block; margin: 10px 0 5px 0;">지문 원문 내용</label>
+      <textarea id="passageInput" placeholder="위에서 드롭다운을 선택하거나, 직접 영어 지문을 입력하세요..."></textarea>
+      
+      <!-- 4등분 숨겨진 원본 보관함 (따옴표 에러 완전 차단) -->
+      <textarea id="hidden_part1" style="display:none;">[Welcome to the Dream Art Gallery! I’m
 Isabel Williams, the docent for the
 FromShadows to Spotlights exhibit. Today, you’regoing to meet three amazing artists who
 never gave up on their art, despite challenges
 in their lives. Each artist has a unique painting
 style and story that has made their work
 highly valued. Let’s explore each artist’s life and artwork
-]</option>
-        <option value="part2">[The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery
+]</textarea>
+      <textarea id="hidden_part2" style="display:none;">[The first artist we’re going to examine is Bill Traylor. Traylor was born into slavery
 in the U.S. in 1853 and spent his early life working on a cotton farm in Alabama.
 Although he became a free man after the American Civil War, he still had to face racial
 discrimination, working for very low wages on the farm. Later, when he was around
@@ -74,8 +84,8 @@ Man with Umbrella portrays the free lives of African Americans that he observed 
 the streets of Montgomery. Using simple shapes and colors, Traylor captured complex
 moments in American history from slavery to freedom. As a result, he’s now considered
 an important figure in American folk art.
-]</option>
-        <option value="part3">[Next, we have Maud Lewis, a renowned artist known for her heart-warming paintings.
+]</textarea>
+      <textarea id="hidden_part3" style="display:none;">[Next, we have Maud Lewis, a renowned artist known for her heart-warming paintings.
 Born in a small Canadian town in 1903, Lewis suffered from physical weaknesses such
 as distorted shoulders and fingers. This limited her mobility and caused her to drop
 out of school. To make a living, she began to paint and sell Christmas cards. When her
@@ -89,9 +99,8 @@ and Pair of Oxen shows decorated cows standing in a flower field. With these fea
 Lewis’ paintings create a magical quality, like that of a fairy tale. As her paintings
 gradually gained popularity, her story inspired many people and was later made into
 books and movies. Maud Lewis expressed her love for the world through her paintings
-and became an iconic figure in Canadian folk art.
-]</option>
-        <option value="part4">[Now, let's take a look at the final artist of this exhibition:Anna Ancher, a famous painter from Denmark. When observing her paintings, you may notice a common theme - they all feature female figures. Born in Skagen, Denmark, in 1859, she later moved to Copenhagen to attend a private painting school. After that, she even studied abroad in Paris,
+and became an iconic figure in Canadian folk art.]</textarea>
+      <textarea id="hidden_part4" style="display:none;">[Now, let's take a look at the final artist of this exhibition:Anna Ancher, a famous painter from Denmark. When observing her paintings, you may notice a common theme - they all feature female figures. Born in Skagen, Denmark, in 1859, she later moved to Copenhagen to attend a private painting school. After that, she even studied abroad in Paris,
 which was unusual for women at the time. Thanks to her mother’s
 encouragement, she was able to take advantage of these opportunities.
 Even after getting married, Ancher persisted in painting, objecting
@@ -110,17 +119,7 @@ the conventional roles of women in the 20th century and displayed her
 exceptional artistic talent. Her paintings continue to amaze us to this day.
 Thank you for joining this guided tour, and I hope my explanations
 have aided you in appreciating these paintings. Please take some time to
-further explore the exhibition.]</option>
-      </select>
-
-      <label style="font-size: 0.9rem; font-weight: bold; display: block; margin: 10px 0 5px 0;">지문 원문 내용</label>
-      <textarea id="passageInput" placeholder="위에서 드롭다운을 선택하거나, 직접 영어 지문을 입력하세요..."></textarea>
-      
-      <!-- 4등분 숨겨진 원본 보관함 (따옴표 에러 완전 차단) -->
-      <textarea id="hidden_part1" style="display:none;">[여기에 파트 1 본문을 그대로 복사해서 넣으세요]</textarea>
-      <textarea id="hidden_part2" style="display:none;">[여기에 파트 2 본문을 그대로 복사해서 넣으세요]</textarea>
-      <textarea id="hidden_part3" style="display:none;">[여기에 파트 3 본문을 그대로 복사해서 넣으세요]</textarea>
-      <textarea id="hidden_part4" style="display:none;">[여기에 파트 4 본문을 그대로 복사해서 넣으세요]</textarea>
+further explore the exhibition.]</textarea>
 
       <label style="font-size: 0.9rem; font-weight: bold; display: block; margin: 10px 0 5px 0;">출제 유형 선택</label>
       <select id="quizTypeSelect">
