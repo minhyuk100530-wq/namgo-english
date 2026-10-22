@@ -229,9 +229,8 @@
             "explanation": "모범 영작문 해설"
           }
         ]`;
-
-        const response = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
+const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
           contents: prompt,
         });
 
